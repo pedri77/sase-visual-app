@@ -571,6 +571,8 @@ select {
 .deployment-grid,
 .innovation-grid,
 .framework-grid,
+.framework-controls,
+.framework-vendor-detail,
 .profile-grid,
 .evidence-grid,
 .capability-grid {
@@ -585,6 +587,8 @@ select {
 .deployment-item,
 .innovation-item,
 .framework-item,
+.framework-selector,
+.vendor-framework-panel,
 .profile-panel,
 .evidence-item,
 .capability-item,
@@ -691,6 +695,8 @@ input[type="range"] {
 .deployment-item,
 .innovation-item,
 .framework-item,
+.framework-selector,
+.vendor-framework-panel,
 .profile-panel,
 .evidence-item,
 .capability-item,
@@ -851,6 +857,8 @@ input[type="range"] {
 .deployment-item,
 .innovation-item,
 .framework-item,
+.framework-selector,
+.vendor-framework-panel,
 .evidence-item,
 .capability-item,
 .encryption-item {
@@ -872,12 +880,60 @@ input[type="range"] {
 .deployment-item p,
 .innovation-item p,
 .framework-item p,
+.framework-selector p,
+.vendor-framework-panel p,
 .evidence-item p,
 .capability-item p,
 .encryption-item p,
 .profile-panel p {
   margin: 0;
   color: var(--muted);
+}
+
+.framework-controls {
+  margin-top: 12px;
+}
+
+.framework-vendor-detail {
+  margin-top: 12px;
+}
+
+.vendor-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.vendor-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 6px 9px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--vendor-accent);
+  border-radius: 7px;
+  background: white;
+  cursor: pointer;
+  font-weight: 850;
+}
+
+.vendor-check input {
+  accent-color: var(--vendor-accent);
+}
+
+.vendor-framework-panel {
+  border-left: 4px solid var(--vendor-accent);
+}
+
+.vendor-framework-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.vendor-heatmap {
+  margin: 0;
 }
 
 .encryption-summary {

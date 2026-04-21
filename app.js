@@ -28,7 +28,8 @@ const state = {
     size: "No definido",
     soc: "No definido",
     notes: ""
-  }
+  },
+  frameworkVendors: {}
 };
 
 function scoreVendors() {
@@ -605,15 +606,116 @@ function advancedScore(vendorIndex) {
   return advancedMetrics.reduce((sum, metric) => sum + metric.scores[vendorIndex] * metric.weight, 0) / total;
 }
 
+function radarSvgForVendor(vendorIndex, color, title) {
+  const radarPoints = advancedMetrics.map((metric, index) => {
+    const angle = (-90 + index * (360 / advancedMetrics.length)) * Math.PI / 180;
+    const radius = 28 + (metric.scores[vendorIndex] / 5) * 82;
+    return `${160 + Math.cos(angle) * radius},${130 + Math.sin(angle) * radius}`;
+  }).join(" ");
+
+  return `
+    <svg viewBox="0 0 320 260" role="img" aria-label="Radar de ${title}">
+      <rect x="0" y="0" width="320" height="260" fill="#fbfcfe"/>
+      <circle cx="160" cy="130" r="110" fill="none" stroke="#e2e8f0"/>
+      <circle cx="160" cy="130" r="72" fill="none" stroke="#e2e8f0"/>
+      <circle cx="160" cy="130" r="36" fill="none" stroke="#e2e8f0"/>
+      <polygon points="${radarPoints}" fill="${color}2e" stroke="${color}" stroke-width="3"/>
+      ${advancedMetrics.map((metric, index) => {
+        const angle = (-90 + index * (360 / advancedMetrics.length)) * Math.PI / 180;
+        return `<text x="${160 + Math.cos(angle) * 124}" y="${132 + Math.sin(angle) * 124}" text-anchor="middle" fill="#647084" font-size="10">${metric.label.split(" ")[0]}</text>`;
+      }).join("")}
+    </svg>
+  `;
+}
+
+function selectedFrameworkIndexes() {
+  return vendors
+    .map((vendor, index) => ({ vendor, index }))
+    .filter(item => state.frameworkVendors[item.vendor.name]);
+}
+
+function renderFrameworkVendorDetails() {
+  const selected = selectedFrameworkIndexes();
+  if (!selected.length) {
+    document.getElementById("frameworkVendorDetail").innerHTML = `
+      <article class="vendor-framework-panel">
+        <strong>Selecciona al menos un fabricante</strong>
+        <p>Marca un checkbox para generar el modelo global, radar, Data Quality y heatmap específico del fabricante.</p>
+      </article>
+    `;
+    return;
+  }
+
+  document.getElementById("frameworkVendorDetail").innerHTML = selected.map(({ vendor, index }) => {
+    const score = advancedScore(index);
+    const dataQuality = advancedMetrics.find(metric => metric.id === "data");
+    const rankedMetrics = advancedMetrics
+      .map(metric => ({ ...metric, score: metric.scores[index], contribution: metric.scores[index] * metric.weight / 100 }))
+      .sort((a, b) => b.score - a.score);
+
+    return `
+      <article class="vendor-framework-panel" style="--vendor-accent:${vendor.color}">
+        <div class="vendor-card-head">
+          <img src="${vendor.logo}" alt="Logo ${vendor.name}" loading="lazy">
+          <div>
+            <strong>${vendor.name}</strong>
+            <p>Modelo específico Detection, Intelligence & Data Quality</p>
+          </div>
+        </div>
+        <div class="vendor-framework-grid">
+          <div class="framework-item">
+            <strong>Modelo global del fabricante</strong>
+            <p>Score ponderado SOC/GRC: <strong>${score.toFixed(2)}/5</strong>. Fórmula: Functional Fit 25%, Detection 20%, Telemetry 15%, Intelligence 15%, Data Quality 10%, Operability 10%, Market Confidence 5%.</p>
+            <div class="fit-chips">
+              ${rankedMetrics.map(metric => `<span class="fit-chip ${metric.score >= 4 ? "high" : "low"}">${metric.label}: ${metric.score}/5</span>`).join("")}
+            </div>
+          </div>
+          <div class="framework-item">
+            <strong>Radar de referencia</strong>
+            ${radarSvgForVendor(index, vendor.color, vendor.name)}
+          </div>
+          <div class="framework-item">
+            <strong>Data Quality</strong>
+            <p>${dataQuality.label}: <strong>${dataQuality.scores[index]}/5</strong>. Revisa fidelidad, ruido, robustez, cobertura, contexto, normalización y trazabilidad antes de integrarlo en SIEM/XSIAM/GRC.</p>
+            <div class="bar-track"><div class="bar-fill" style="width:${(dataQuality.scores[index] / 5) * 100}%;background:${vendor.color}"></div></div>
+          </div>
+        </div>
+        <div class="heatmap-panel vendor-heatmap">
+          <table>
+            <thead>
+              <tr>
+                <th>Tipo de amenaza</th>
+                <th>${vendor.name}</th>
+                <th>Lectura ejecutiva</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${threatHeatmap.map(row => {
+                const score = row.scores[index];
+                return `
+                  <tr>
+                    <td><strong>${row.type}</strong></td>
+                    <td><span class="fit-chip ${score >= 4 ? "high" : "low"}">${score}/5</span></td>
+                    <td>${score >= 4 ? "Cobertura fuerte para priorizar en PoC." : "Validar cobertura, tuning y falsos positivos."}</td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
 function renderFramework() {
+  if (!Object.keys(state.frameworkVendors).length) {
+    vendors.forEach((vendor, index) => state.frameworkVendors[vendor.name] = index === 2);
+  }
+
   const advancedRanking = vendors
     .map((vendor, index) => ({ vendor, score: advancedScore(index) }))
     .sort((a, b) => b.score - a.score);
-  const radarPoints = advancedMetrics.map((metric, index) => {
-    const angle = (-90 + index * (360 / advancedMetrics.length)) * Math.PI / 180;
-    const radius = 28 + (metric.scores[2] / 5) * 82;
-    return `${160 + Math.cos(angle) * radius},${130 + Math.sin(angle) * radius}`;
-  }).join(" ");
 
   document.getElementById("frameworkGrid").innerHTML = `
     <article class="framework-item">
@@ -625,23 +727,37 @@ function renderFramework() {
     </article>
     <article class="framework-item">
       <strong>Radar de referencia</strong>
-      <svg viewBox="0 0 320 260" role="img" aria-label="Radar de capacidades avanzadas">
-        <rect x="0" y="0" width="320" height="260" fill="#fbfcfe"/>
-        <circle cx="160" cy="130" r="110" fill="none" stroke="#e2e8f0"/>
-        <circle cx="160" cy="130" r="72" fill="none" stroke="#e2e8f0"/>
-        <circle cx="160" cy="130" r="36" fill="none" stroke="#e2e8f0"/>
-        <polygon points="${radarPoints}" fill="rgba(109,40,217,0.18)" stroke="#6d28d9" stroke-width="3"/>
-        ${advancedMetrics.map((metric, index) => {
-          const angle = (-90 + index * (360 / advancedMetrics.length)) * Math.PI / 180;
-          return `<text x="${160 + Math.cos(angle) * 124}" y="${132 + Math.sin(angle) * 124}" text-anchor="middle" fill="#647084" font-size="10">${metric.label.split(" ")[0]}</text>`;
-        }).join("")}
-      </svg>
+      ${radarSvgForVendor(2, vendors[2].color, "Palo Alto Networks")}
     </article>
     <article class="framework-item">
       <strong>Fórmula ejecutiva</strong>
       <p>Total Score = 0.25 Functional Fit + 0.20 Detection + 0.15 Telemetry + 0.15 Intelligence + 0.10 Data Quality + 0.10 Operability + 0.05 Market Confidence.</p>
     </article>
   `;
+
+  document.getElementById("frameworkVendorControls").innerHTML = `
+    <article class="framework-selector">
+      <strong>Análisis específico por fabricante</strong>
+      <p>Marca uno o varios fabricantes para pintar debajo el modelo global, radar, Data Quality y heatmap específico.</p>
+      <div class="vendor-checks">
+        ${vendors.map(vendor => `
+          <label class="vendor-check" style="--vendor-accent:${vendor.color}">
+            <input type="checkbox" data-framework-vendor="${vendor.name}" ${state.frameworkVendors[vendor.name] ? "checked" : ""}>
+            <span>${vendor.name}</span>
+          </label>
+        `).join("")}
+      </div>
+    </article>
+  `;
+
+  document.querySelectorAll("[data-framework-vendor]").forEach(input => {
+    input.addEventListener("change", event => {
+      state.frameworkVendors[event.target.dataset.frameworkVendor] = event.target.checked;
+      renderFrameworkVendorDetails();
+    });
+  });
+
+  renderFrameworkVendorDetails();
 
   document.getElementById("heatmapPanel").innerHTML = `
     <table>
@@ -851,6 +967,16 @@ function createEvaluationPdf() {
   doc.barChart("Scoring SOC/GRC avanzado", vendors.map((vendor, index) => ({ label: vendor.name, value: advancedScore(index), color: vendor.color })), 5);
   advancedMetrics.forEach(metric => {
     doc.kv(metric.label, `Peso ${metric.weight}% | ${vendors.map((vendor, index) => `${vendor.name}: ${metric.scores[index]}`).join(" | ")}`);
+  });
+  selectedFrameworkIndexes().forEach(({ vendor, index }) => {
+    doc.subsection(`${vendor.name} - modelo específico SOC/GRC`);
+    doc.kv("Score global", `${advancedScore(index).toFixed(2)}/5`);
+    advancedMetrics.forEach(metric => {
+      doc.kv(metric.label, `${metric.scores[index]}/5 | Peso ${metric.weight}%`);
+    });
+    threatHeatmap.forEach(row => {
+      doc.kv(row.type, `${row.scores[index]}/5`);
+    });
   });
   threatHeatmap.forEach(row => {
     doc.kv(row.type, vendors.map((vendor, index) => `${vendor.name}: ${row.scores[index]}/5`).join(" | "));
