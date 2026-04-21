@@ -587,7 +587,8 @@ select {
 .framework-item,
 .profile-panel,
 .evidence-item,
-.capability-item {
+.capability-item,
+.encryption-item {
   position: relative;
   display: grid;
   gap: 12px;
@@ -692,7 +693,8 @@ input[type="range"] {
 .framework-item,
 .profile-panel,
 .evidence-item,
-.capability-item {
+.capability-item,
+.encryption-item {
   align-content: start;
 }
 
@@ -846,7 +848,8 @@ input[type="range"] {
 .innovation-item,
 .framework-item,
 .evidence-item,
-.capability-item {
+.capability-item,
+.encryption-item {
   padding-left: 18px;
 }
 
@@ -867,9 +870,47 @@ input[type="range"] {
 .framework-item p,
 .evidence-item p,
 .capability-item p,
+.encryption-item p,
 .profile-panel p {
   margin: 0;
   color: var(--muted);
+}
+
+.encryption-summary {
+  grid-column: 1 / -1;
+}
+
+.encryption-item {
+  grid-column: span 2;
+}
+
+.executive-mode {
+  padding: 10px;
+  border-radius: 7px;
+  background: #eef2f7;
+  color: var(--ink);
+  font-weight: 750;
+}
+
+.encryption-layers {
+  display: grid;
+  gap: 8px;
+}
+
+.encryption-layer {
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+  border: 1px solid #edf1f6;
+  border-radius: 7px;
+  background: white;
+}
+
+.encryption-layer span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
 }
 
 .capability-grid {
@@ -1079,6 +1120,10 @@ input[type="range"] {
   .summary-grid,
   .visual-grid {
     grid-template-columns: 1fr;
+  }
+
+  .encryption-item {
+    grid-column: auto;
   }
 }
 

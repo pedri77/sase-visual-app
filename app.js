@@ -10,6 +10,7 @@ const {
   advancedMetrics,
   threatHeatmap,
   techItems,
+  encryptionLayerItems = [],
   deploymentItems,
   quantumAiItems,
   scenarios,
@@ -364,7 +365,7 @@ function renderRisks() {
 }
 
 function renderTechnical() {
-  document.getElementById("techGrid").innerHTML = techItems.map(item => {
+  const cards = techItems.map(item => {
     const vendor = vendors.find(v => v.name === item.vendor);
     return `
       <article class="tech-item" style="--vendor-accent:${vendor.color}">
@@ -381,6 +382,48 @@ function renderTechnical() {
       </article>
     `;
   }).join("");
+
+  const encryptionMatrix = encryptionLayerItems.map(item => {
+    const vendor = vendors.find(v => v.name === item.vendor);
+    return `
+      <article class="encryption-item" style="--vendor-accent:${vendor.color}">
+        <div class="vendor-card-head">
+          <img src="${vendor.logo}" alt="Logo ${item.vendor}" loading="lazy">
+          <strong>${item.vendor}</strong>
+        </div>
+        <p class="executive-mode">${item.executive}</p>
+        <div class="encryption-layers">
+          ${item.layers.map(layer => `
+            <div class="encryption-layer">
+              <span>${layer.layer}</span>
+              <p><strong>Cifrado:</strong> ${layer.encryption}</p>
+              <p><strong>Modo ejecutivo:</strong> ${layer.mode}</p>
+              <p><strong>PoC:</strong> ${layer.poc}</p>
+            </div>
+          `).join("")}
+        </div>
+        <div class="vendor-links">
+          ${item.sources.map((source, index) => `<a href="${source}" target="_blank" rel="noreferrer">Fuente ${index + 1}</a>`).join("")}
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  document.getElementById("techGrid").innerHTML = `
+    ${cards}
+    <article class="framework-item encryption-summary">
+      <strong>Lectura ejecutiva de cifrado por capas</strong>
+      <p>El punto crítico no es solo si el túnel cifra, sino dónde se termina TLS, quién custodia las CA, cómo se inspecciona, qué algoritmos se permiten y qué evidencias quedan para SOC/GRC.</p>
+      <div class="fit-chips">
+        <span class="fit-chip high">Endpoint</span>
+        <span class="fit-chip high">Túnel usuario-cloud</span>
+        <span class="fit-chip high">Sede/edge</span>
+        <span class="fit-chip high">Inspección TLS</span>
+        <span class="fit-chip high">Logs/datos</span>
+      </div>
+    </article>
+    ${encryptionMatrix}
+  `;
 }
 
 function renderDeployment() {
@@ -729,6 +772,14 @@ function createEvaluationPdf() {
     doc.kv("Sedes / forwarding", item.site);
     doc.kv("TLS inspection", item.tls);
     doc.kv("Validar en PoC", item.validate);
+  });
+  encryptionLayerItems.forEach(item => {
+    doc.subsection(`${item.vendor} - cifrado por capas`);
+    doc.paragraph(item.executive);
+    item.layers.forEach(layer => {
+      doc.kv(layer.layer, `Cifrado: ${layer.encryption} | Modo: ${layer.mode} | PoC: ${layer.poc}`);
+    });
+    doc.kv("Fuentes", item.sources.join(" | "));
   });
 
   doc.section("9. Implementacion, provision y on-premise");

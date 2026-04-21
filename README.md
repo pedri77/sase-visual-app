@@ -8,7 +8,7 @@ Aplicacion estatica para valorar visualmente proveedores SASE/SSE:
 - Fortinet
 - Cisco
 
-Incluye scoring ponderado, casos de uso imprescindibles, funcionalidades por producto/marca, matriz de riesgo con CVEs, respuesta de parches, incidentes documentados en medios, ENS, cifrado, implantacion/provision, posicion on-premise/soberana, valoracion quantum/IA, evidencia de confianza y casos de exito publicos.
+Incluye scoring ponderado, casos de uso imprescindibles, funcionalidades por producto/marca, matriz de riesgo con CVEs, respuesta de parches, incidentes documentados en medios, ENS, cifrado por capas, especificaciones tecnicas, implantacion/provision, posicion on-premise/soberana, valoracion quantum/IA, evidencia de confianza y casos de exito publicos.
 
 El boton de descarga genera un PDF con portada, logo de la web y toda la informacion estructurada en secciones.
 

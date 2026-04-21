@@ -456,6 +456,69 @@ techItems: [
   }
 ],
 
+encryptionLayerItems: [
+  {
+    vendor: "Zscaler",
+    executive: "El tráfico del usuario se encapsula hacia la nube Zscaler; allí se descifra solo si la política lo permite, se inspecciona y se vuelve a cifrar hacia Internet o aplicaciones privadas.",
+    layers: [
+      { layer: "Endpoint / agente", encryption: "Z-Tunnel 2.0 con DTLS/TLS; cifrados modernos como AES-GCM y DHE/PFS según documentación de Zscaler.", mode: "Cliente ZCC crea el túnel y aplica steering por app/red.", poc: "Validar versión ZCC, TLS 1.3, bypass y comportamiento con redes confiables." },
+      { layer: "Usuario a cloud", encryption: "TLS/DTLS; ZPA usa TLS para tráfico TCP/UDP hacia apps privadas.", mode: "El usuario no accede directo a la app; se brokeriza desde Zero Trust Exchange.", poc: "Probar latencia, reconexión y estabilidad en roaming." },
+      { layer: "Sede / forwarding", encryption: "GRE sin cifrado extremo a extremo o IPSec si se requiere confidencialidad del túnel.", mode: "Sedes pueden enviar tráfico por GRE/IPSec/PAC/Branch Connector.", poc: "Exigir IPSec si el carrier no es confiable; validar HA y rutas." },
+      { layer: "Inspección TLS", encryption: "SSL inspection con CA corporativa/Zscaler; soporte de visibilidad de cifrados quantum/PQC en ofertas recientes.", mode: "La plataforma actúa como punto de inspección controlado por política.", poc: "Medir impacto, excepciones, pinning, banca, salud y apps críticas." },
+      { layer: "Datos/logs", encryption: "Cifrado en tránsito hacia logs/API e integración SIEM; revisar retención, región y claves contractualmente.", mode: "Los eventos se exportan para SOC/GRC.", poc: "Validar residencia UE, campos sensibles y anonimización." }
+    ],
+    sources: ["https://help.zscaler.com/client-connector/understanding-traffic-forwarding-z-tunnel-20", "https://www.zscaler.com/innovations-launch/quantum-security"]
+  },
+  {
+    vendor: "Netskope",
+    executive: "Netskope dirige el tráfico al NewEdge mediante cliente, proxy o túneles de sede; inspecciona SaaS/web/API con fuerte foco en datos y vuelve a cifrar según destino.",
+    layers: [
+      { layer: "Endpoint / agente", encryption: "Netskope Client con TLS 1.3 nativo y certificados de cliente.", mode: "El cliente decide steering hacia Netskope según usuario, app y política.", poc: "Validar certificados, actualización de agente y coexistencia EDR/VPN." },
+      { layer: "Usuario a cloud", encryption: "TLS hacia NewEdge; NPA usa publishers para acceso privado sin exponer apps.", mode: "Acceso cloud-delivered con contexto de usuario/dispositivo/datos.", poc: "Probar NPA Publishers, failover y rendimiento de aplicaciones privadas." },
+      { layer: "Sede / forwarding", encryption: "IPSec para túneles cifrados; GRE disponible para encaminamiento según diseño.", mode: "Sedes o proxies envían tráfico a NewEdge.", poc: "Definir cuándo GRE basta y cuándo IPSec es obligatorio." },
+      { layer: "Inspección TLS", encryption: "SSL/TLS inspection con CA Netskope/custom y políticas de excepción.", mode: "Descifra, clasifica datos, aplica DLP/CASB y recifra.", poc: "Validar rotación de CA, apps con pinning y DLP en GenAI/SaaS." },
+      { layer: "Datos/logs", encryption: "APIs y exportación SIEM cifradas; revisar tokenización, retención y región.", mode: "La telemetría alimenta SOC, GRC y reporting de riesgo.", poc: "Validar campos DLP, privacidad y residencia." }
+    ],
+    sources: ["https://docs.netskope.com/en/netskope-client/", "https://docs.netskope.com/en/ipsec-and-gre/"]
+  },
+  {
+    vendor: "Palo Alto Networks",
+    executive: "Prisma Access usa túneles gestionados y perfiles criptográficos para usuarios, sedes y service connections; la seguridad se apoya en PAN-OS, Strata y Cortex.",
+    layers: [
+      { layer: "Endpoint / agente", encryption: "Prisma Access Agent/GlobalProtect con TLS/IPSec según modo y versión.", mode: "El agente conecta al punto Prisma Access y aplica política por usuario/postura.", poc: "Validar versión, certificados, HIP/postura y experiencia en roaming." },
+      { layer: "Usuario a cloud", encryption: "TLS y cifrado de plano de servicio entre nodos Prisma Access según diseño.", mode: "El tráfico llega a cloud security processing nodes antes del destino.", poc: "Medir latencia, región y logging a Strata/XSIAM." },
+      { layer: "Sede / forwarding", encryption: "IPSec/IKE con AES-GCM o AES-CBC, SHA, DH groups y PFS configurables.", mode: "Remote networks y service connections cifran tráfico sede/DC hacia Prisma Access.", poc: "Alinear suites con política corporativa y exigir PFS/DH fuertes." },
+      { layer: "Inspección TLS", encryption: "SSL decryption PAN-OS; soporte documentado para análisis/control de TLS 1.3 y PQC en decryption.", mode: "Descifra por política, inspecciona con seguridad PAN-OS y recifra.", poc: "Validar exclusiones, certificados, legal, privacidad y logs." },
+      { layer: "Datos/logs", encryption: "Strata Logging Service/Cortex con transporte cifrado; revisar tenant, región y controles de acceso.", mode: "Telemetría centralizada para XDR/XSIAM y respuesta.", poc: "Validar segregación, RBAC, retención y exportación SIEM." }
+    ],
+    sources: ["https://docs.paloaltonetworks.com/prisma-access/administration/prisma-access-overview", "https://docs.paloaltonetworks.com/network-security/decryption/administration/post-quantum-cryptography-decryption"]
+  },
+  {
+    vendor: "Fortinet",
+    executive: "FortiSASE combina FortiClient, FortiGate/edge y FortiOS; permite modelos cloud, edge y soberanos, con cifrado de túneles y de inspección alineado con Fortinet Security Fabric.",
+    layers: [
+      { layer: "Endpoint / agente", encryption: "FortiClient/FortiSASE con túneles seguros y certificados gestionados.", mode: "El cliente aplica acceso SSE/ZTNA y políticas de seguridad.", poc: "Validar FortiClient EMS, versiones y coexistencia con FortiGate." },
+      { layer: "Usuario a cloud", encryption: "TLS/IPSec según modo de acceso y servicio.", mode: "Usuarios remotos pasan por FortiSASE para SWG/ZTNA/CASB/FWaaS.", poc: "Medir experiencia, PoP, split tunnel y certificados." },
+      { layer: "Sede / forwarding", encryption: "IKEv2/IPSec con suites como AES-GCM/ChaCha20 según documentación FortiSASE; BGP para edge.", mode: "Thin Edge, Secure Edge y Branch On-Ramp conectan sedes.", poc: "Exigir algoritmos aprobados, HA, BGP y FortiSASE Sovereign si aplica." },
+      { layer: "Inspección TLS", encryption: "Deep inspection con CA FortiSASE/FortiGate y políticas de exención.", mode: "Descifra e inspecciona con FortiGuard/FortiOS antes de recifrar.", poc: "Validar impacto, excepciones y gestión de CA en endpoints." },
+      { layer: "Datos/logs", encryption: "Logs hacia FortiAnalyzer/FortiManager/cloud cifrados; revisar soberanía y tenencia.", mode: "Operación centralizada en Fabric.", poc: "Validar retención, RBAC, exportación SOC y ubicación." }
+    ],
+    sources: ["https://docs.fortinet.com/document/fortisase/latest/administration-guide/116757/ipsec-tunnels", "https://www.fortinet.com/products/sase"]
+  },
+  {
+    vendor: "Cisco",
+    executive: "Cisco Secure Access cifra accesos con Secure Client, Resource Connectors e IPsec para sedes; el valor ejecutivo está en combinar identidad, red, observabilidad y XDR.",
+    layers: [
+      { layer: "Endpoint / agente", encryption: "Cisco Secure Client con túneles seguros para ZTNA/VPNaaS y módulos de seguridad.", mode: "El cliente dirige tráfico a Secure Access y aplica identidad/postura.", poc: "Validar Secure Client, posture, Duo/ISE y experiencia móvil." },
+      { layer: "Usuario a cloud", encryption: "TLS para acceso web/ZTNA y túneles cifrados según modo.", mode: "Acceso cloud-delivered a Internet, SaaS y apps privadas.", poc: "Probar clientless ZTNA, Resource Connectors y apps legacy." },
+      { layer: "Sede / forwarding", encryption: "IPsec/IKEv2 para túneles site-to-cloud; integración SD-WAN según arquitectura.", mode: "Sedes conectan a Cisco Secure Access o SD-WAN fabric.", poc: "Validar cifrados, rutas, HA y segmentación SGT/ISE." },
+      { layer: "Inspección TLS", encryption: "Full/selective TLS decryption con certificados corporativos y políticas de excepción.", mode: "FWaaS/SWG descifra antes de inspección y recifra hacia destino.", poc: "Validar excepciones, certificados, rendimiento y apps con pinning." },
+      { layer: "Datos/logs", encryption: "Telemetría hacia Cisco XDR/ThousandEyes/SIEM por canales cifrados; revisar región y RBAC.", mode: "Observabilidad y respuesta centralizadas.", poc: "Validar integración XDR, privacidad, exportaciones y retención." }
+    ],
+    sources: ["https://docs.sse.cisco.com/sse-user-guide/docs/welcome-cisco-secure-access", "https://docs.sse.cisco.com/sse-user-guide/docs/configure-ipsec-tunnels"]
+  }
+],
+
 deploymentItems: [
   {
     vendor: "Zscaler",
