@@ -19,6 +19,7 @@ El boton superior descarga un PDF completo con portada, logo de la web y toda la
 - `data.js`: catalogo editable de fabricantes, criterios, evidencias, CVEs, perfiles y casos de uso.
 - `app.js`: motor de scoring, recomendacion, graficos, navegacion y PDF ejecutivo.
 - `robots.txt` y `sitemap.xml`: indexacion basica para GitHub Pages.
+- `manifest.webmanifest`, `service-worker.js` e `icon.svg`: experiencia PWA estatica para uso rapido/offline basico.
 - `ARCHITECTURE_ROADMAP.md`: hoja de ruta tecnica para evolucionar de app estatica a producto SaaS.
 
 ## Flujo de valoracion
@@ -33,6 +34,9 @@ El boton superior descarga un PDF completo con portada, logo de la web y toda la
 
 - Persistencia local de pesos, perfil, escenario y casos imprescindibles.
 - Enlaces navegables por hash para abrir secciones concretas.
+- Control de evaluacion con progreso, anterior/siguiente, enlace copiable y PDF de seccion actual.
+- Feedback visual mediante notificaciones locales.
+- PWA instalable con cache estatica para GitHub Pages.
 - Metadatos SEO, canonical, Open Graph y Twitter Card.
 - Politica CSP basica mediante meta tag compatible con GitHub Pages.
 - Enlace de salto al contenido principal para accesibilidad.

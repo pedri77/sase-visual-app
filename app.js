@@ -22,6 +22,57 @@ const {
 
 const STORAGE_KEY = "sase-decision-studio-state-v1";
 
+const sectionMeta = {
+  dashboard: {
+    title: "Panel ejecutivo",
+    hint: "Revisa la recomendación, ranking ponderado y lectura ejecutiva antes de exportar."
+  },
+  profile: {
+    title: "Perfil del cliente",
+    hint: "Define sector, tamaño, madurez SOC y contexto para adaptar pesos y casos imprescindibles."
+  },
+  assessment: {
+    title: "Scoring",
+    hint: "Ajusta los pesos de decisión. Estos valores recalculan ranking, recomendación y PDF."
+  },
+  usecases: {
+    title: "Casos imprescindibles",
+    hint: "Marca los casos obligatorios. Si un fabricante no llega al umbral, aparecerá como pendiente de validación."
+  },
+  framework: {
+    title: "Detección e inteligencia",
+    hint: "Compara modelo SOC/GRC, radar, Data Quality e integraciones por fabricante."
+  },
+  evidence: {
+    title: "Evidencia y confianza",
+    hint: "Contrasta fuentes públicas, confianza declarada y validaciones pendientes de PoC/RFP."
+  },
+  capabilities: {
+    title: "Funcionalidades",
+    hint: "Revisa portfolio por marca, soluciones equivalentes, grado de implementación y cautelas."
+  },
+  risks: {
+    title: "Riesgos y vulnerabilidades",
+    hint: "Analiza CVEs, respuesta a parches, incidentes publicados y acciones de mitigación."
+  },
+  technical: {
+    title: "Cifrado",
+    hint: "Valida túneles, TLS inspection, modelo de claves y especificaciones documentadas."
+  },
+  deployment: {
+    title: "Implantación",
+    hint: "Evalúa provisión, on-premise, soberanía operativa y casos públicos."
+  },
+  quantum: {
+    title: "Quantum",
+    hint: "Revisa preparación PQC, crypto-agility y evidencias oficiales disponibles."
+  },
+  ai: {
+    title: "IA / XDR",
+    hint: "Evalúa capacidades de IA, seguridad de GenAI y encaje con XSIAM/XDR."
+  }
+};
+
 const state = {
   weights: Object.fromEntries(criteria.map(c => [c.id, c.weight])),
   required: Object.fromEntries(useCases.map(u => [u.label, u.required])),
@@ -34,7 +85,8 @@ const state = {
   },
   scenario: "balanced",
   scoringSource: "Pesos base",
-  frameworkVendors: {}
+  frameworkVendors: {},
+  currentView: "dashboard"
 };
 
 function persistState() {
@@ -45,7 +97,8 @@ function persistState() {
       profile: state.profile,
       scenario: state.scenario,
       scoringSource: state.scoringSource,
-      frameworkVendors: state.frameworkVendors
+      frameworkVendors: state.frameworkVendors,
+      currentView: state.currentView
     }));
   } catch {
     // Local storage can be unavailable in private or locked-down browsers.
@@ -69,9 +122,68 @@ function restoreState() {
     if (saved.scenario) state.scenario = saved.scenario;
     if (saved.scoringSource) state.scoringSource = saved.scoringSource;
     if (saved.frameworkVendors) state.frameworkVendors = saved.frameworkVendors;
+    if (saved.currentView && sectionMeta[saved.currentView]) state.currentView = saved.currentView;
   } catch {
     localStorage.removeItem(STORAGE_KEY);
   }
+}
+
+function getNavOrder() {
+  return [...document.querySelectorAll(".rail-item[data-view]")].map(item => item.dataset.view);
+}
+
+function activeSectionId() {
+  return document.querySelector(".view.active")?.id || state.currentView || "dashboard";
+}
+
+function configurationProgress() {
+  const profileFields = ["sector", "size", "soc"];
+  const profileDone = profileFields.filter(key => state.profile[key] && state.profile[key] !== "No definido").length;
+  const requiredCount = Object.values(state.required).filter(Boolean).length;
+  const weightsChanged = criteria.some(criterion => Number(state.weights[criterion.id]) !== Number(criterion.weight));
+  const frameworkSelected = selectedFrameworkIndexes().length > 0;
+  const notesDone = state.profile.notes.trim().length > 0;
+  const score = profileDone + (requiredCount ? 1 : 0) + (weightsChanged ? 1 : 0) + (frameworkSelected ? 1 : 0) + (notesDone ? 1 : 0);
+  const total = profileFields.length + 4;
+  const percent = Math.round((score / total) * 100);
+  const missing = [];
+  if (profileDone < profileFields.length) missing.push("perfil cliente");
+  if (!requiredCount) missing.push("casos imprescindibles");
+  if (!weightsChanged) missing.push("pesos");
+  if (!frameworkSelected) missing.push("fabricante en detección");
+  return { percent, missing };
+}
+
+function updateCommandPanel(viewId = activeSectionId()) {
+  const meta = sectionMeta[viewId] || sectionMeta.dashboard;
+  const title = document.getElementById("currentSectionTitle");
+  const hint = document.getElementById("currentSectionHint");
+  const completionText = document.getElementById("completionText");
+  const completionBar = document.getElementById("completionBar");
+  const completionHint = document.getElementById("completionHint");
+  if (!title || !hint || !completionText || !completionBar || !completionHint) return;
+  const progress = configurationProgress();
+  title.textContent = meta.title;
+  hint.textContent = meta.hint;
+  completionText.textContent = `${progress.percent}%`;
+  completionBar.style.width = `${progress.percent}%`;
+  completionHint.textContent = progress.missing.length
+    ? `Pendiente: ${progress.missing.join(", ")}.`
+    : "Configuración lista para revisión ejecutiva y exportación.";
+}
+
+function toast(message, tone = "success") {
+  const region = document.getElementById("toastRegion");
+  if (!region) return;
+  const item = document.createElement("div");
+  item.className = `toast ${tone}`;
+  item.textContent = message;
+  region.appendChild(item);
+  window.setTimeout(() => item.classList.add("visible"), 20);
+  window.setTimeout(() => {
+    item.classList.remove("visible");
+    window.setTimeout(() => item.remove(), 220);
+  }, 3200);
 }
 
 function scoreVendors() {
@@ -127,6 +239,7 @@ function renderRanking() {
   `;
   document.getElementById("gateCount").textContent = ranked.reduce((sum, item) => sum + item.unmetRequirements.length, 0);
   document.getElementById("riskAverage").textContent = (vendors.reduce((sum, v) => sum + v.risk, 0) / vendors.length).toFixed(1);
+  updateCommandPanel();
 }
 
 function renderQuadrant() {
@@ -331,6 +444,7 @@ function applyProfilePreset(presetId) {
   renderUseCases();
   renderProfile();
   refresh();
+  toast("Perfil aplicado y scoring recalculado.");
 }
 
 function syncProfileForm() {
@@ -397,6 +511,7 @@ function renderProfile() {
 
   document.getElementById("profileNotes").addEventListener("input", () => {
     syncProfileForm();
+    updateCommandPanel();
   });
 
   document.getElementById("applyProfile").addEventListener("click", () => {
@@ -429,6 +544,7 @@ function renderUseCases() {
       persistState();
       renderUseCases();
       refresh();
+      toast(state.required[label] ? "Caso marcado como imprescindible." : "Caso marcado como deseable.", "info");
     });
   });
 }
@@ -891,6 +1007,7 @@ function renderFramework() {
       state.frameworkVendors[event.target.dataset.frameworkVendor] = event.target.checked;
       persistState();
       renderFrameworkVendorDetails();
+      updateCommandPanel();
     });
   });
 
@@ -928,6 +1045,7 @@ function applyScenario(name) {
   persistState();
   renderCriteria();
   refresh();
+  toast("Escenario aplicado y ranking actualizado.");
 }
 
 function wireNavigation() {
@@ -941,6 +1059,9 @@ function wireNavigation() {
     if (window.location.hash !== `#${viewId}`) {
       history.replaceState(null, "", `#${viewId}`);
     }
+    state.currentView = viewId;
+    persistState();
+    updateCommandPanel(viewId);
     if (targetId) {
       window.setTimeout(() => document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
     }
@@ -966,6 +1087,7 @@ function wireNavigation() {
     state.scenario = "balanced";
     state.scoringSource = "Pesos base";
     state.frameworkVendors = {};
+    state.currentView = "dashboard";
     localStorage.removeItem(STORAGE_KEY);
     document.getElementById("scenario").value = "balanced";
     renderCriteria();
@@ -973,11 +1095,51 @@ function wireNavigation() {
     renderUseCases();
     renderFramework();
     refresh();
+    showView("dashboard");
+    toast("Evaluación restablecida.", "info");
   });
-  document.getElementById("exportPdf").addEventListener("click", exportPdf);
+  document.getElementById("exportPdf").addEventListener("click", () => {
+    exportPdf();
+    toast("PDF completo generado.");
+  });
+  document.getElementById("exportCurrentSection").addEventListener("click", () => {
+    const sectionId = activeSectionId();
+    exportSectionPdf(sectionId);
+    toast(`PDF de ${sectionMeta[sectionId]?.title || "sección"} generado.`);
+  });
+  document.getElementById("previousSection").addEventListener("click", () => {
+    const order = getNavOrder();
+    const index = order.indexOf(activeSectionId());
+    showView(order[(index - 1 + order.length) % order.length]);
+  });
+  document.getElementById("nextSection").addEventListener("click", () => {
+    const order = getNavOrder();
+    const index = order.indexOf(activeSectionId());
+    showView(order[(index + 1) % order.length]);
+  });
+  document.getElementById("copySectionLink").addEventListener("click", async () => {
+    const url = `${window.location.origin}${window.location.pathname}#${activeSectionId()}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast("Enlace a la sección copiado.");
+    } catch {
+      const helper = document.createElement("input");
+      helper.value = url;
+      helper.setAttribute("readonly", "");
+      helper.style.position = "fixed";
+      helper.style.opacity = "0";
+      document.body.appendChild(helper);
+      helper.select();
+      document.execCommand("copy");
+      helper.remove();
+      toast("Enlace a la sección copiado.");
+    }
+  });
 
   const initialView = window.location.hash.slice(1);
   if (initialView && document.getElementById(initialView)) showView(initialView);
+  else if (state.currentView && document.getElementById(state.currentView)) showView(state.currentView);
+  else updateCommandPanel("dashboard");
   window.addEventListener("hashchange", () => {
     const view = window.location.hash.slice(1);
     if (view) showView(view);
@@ -995,7 +1157,10 @@ function wireSectionExports() {
     button.title = "Descargar esta sección en PDF";
     button.setAttribute("aria-label", "Descargar esta sección en PDF");
     button.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"/></svg><span>PDF sección</span>`;
-    button.addEventListener("click", () => exportSectionPdf(view.id));
+    button.addEventListener("click", () => {
+      exportSectionPdf(view.id);
+      toast(`PDF de ${sectionMeta[view.id]?.title || "sección"} generado.`);
+    });
     title.appendChild(button);
   });
 }
@@ -1592,6 +1757,9 @@ function init() {
   wireNavigation();
   wireSectionExports();
   refresh();
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+  }
 }
 
 init();

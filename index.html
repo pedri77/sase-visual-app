@@ -7,15 +7,20 @@
   <meta name="robots" content="index,follow">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="theme-color" content="#0f766e">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+  <meta name="application-name" content="SASE Decision Studio">
+  <meta name="apple-mobile-web-app-title" content="SASE Studio">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
   <link rel="canonical" href="https://pedri77.github.io/sase-visual-app/">
+  <link rel="manifest" href="./manifest.webmanifest">
   <meta property="og:type" content="website">
   <meta property="og:title" content="SASE Decision Studio">
   <meta property="og:description" content="Comparador visual SASE/SSE con scoring, riesgos, cifrado, detección, ENS, Quantum e IA.">
   <meta property="og:url" content="https://pedri77.github.io/sase-visual-app/">
   <meta name="twitter:card" content="summary">
   <title>SASE Decision Studio</title>
-  <link rel="stylesheet" href="./styles.css?v=hardening-20260421">
+  <link rel="stylesheet" href="./styles.css?v=ux-pages-20260421">
 </head>
 <body>
   <a class="skip-link" href="#dashboard">Saltar al contenido principal</a>
@@ -101,6 +106,40 @@
     </aside>
 
     <section class="workspace">
+      <section class="command-panel" aria-label="Control de evaluación">
+        <div class="command-copy">
+          <span class="kicker">Ruta de trabajo</span>
+          <strong id="currentSectionTitle">Panel ejecutivo</strong>
+          <p id="currentSectionHint">Revisa la recomendación, el scoring y los riesgos antes de exportar.</p>
+        </div>
+        <div class="completion-card" aria-label="Progreso de configuración">
+          <div>
+            <span>Configuración</span>
+            <strong id="completionText">0%</strong>
+          </div>
+          <div class="completion-track" aria-hidden="true"><span id="completionBar"></span></div>
+          <p id="completionHint">Define perfil, pesos y casos imprescindibles para personalizar la recomendación.</p>
+        </div>
+        <div class="command-actions">
+          <button class="utility-button" id="previousSection" type="button" aria-label="Ir a la sección anterior" title="Sección anterior">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>
+            <span>Anterior</span>
+          </button>
+          <button class="utility-button primary" id="nextSection" type="button" aria-label="Ir a la siguiente sección" title="Siguiente sección">
+            <span>Siguiente</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+          </button>
+          <button class="utility-button" id="copySectionLink" type="button" aria-label="Copiar enlace a esta sección" title="Copiar enlace a esta sección">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l2-2a5 5 0 0 0-7.07-7.07l-1.15 1.15M14 11a5 5 0 0 0-7.07 0l-2 2A5 5 0 0 0 12 20.07l1.15-1.15"/></svg>
+            <span>Enlace</span>
+          </button>
+          <button class="utility-button" id="exportCurrentSection" type="button" aria-label="Descargar la sección actual en PDF" title="Descargar sección actual">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"/></svg>
+            <span>PDF sección</span>
+          </button>
+        </div>
+      </section>
+
       <section class="view active" id="dashboard">
         <div class="summary-grid">
           <article class="summary-panel decision-panel">
@@ -280,7 +319,9 @@
     </section>
   </main>
 
-  <script src="./data.js?v=hardening-20260421"></script>
-  <script src="./app.js?v=hardening-20260421"></script>
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="./data.js?v=ux-pages-20260421"></script>
+  <script src="./app.js?v=ux-pages-20260421"></script>
 </body>
 </html>

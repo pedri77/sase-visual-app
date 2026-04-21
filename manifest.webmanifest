@@ -1,0 +1,18 @@
+{
+  "name": "SASE Decision Studio",
+  "short_name": "SASE Studio",
+  "description": "Evaluación visual de proveedores SASE/SSE con scoring, riesgos, cifrado, ENS, Quantum e IA.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f7fa",
+  "theme_color": "#0f766e",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
