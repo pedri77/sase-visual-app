@@ -3,10 +3,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Herramienta visual para comparar plataformas SASE/SSE: Zscaler, Netskope, Palo Alto Networks, Fortinet y Cisco, con scoring configurable, riesgos, cifrado, detección, ENS, Quantum e IA.">
+  <meta name="robots" content="index,follow">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="theme-color" content="#0f766e">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+  <link rel="canonical" href="https://pedri77.github.io/sase-visual-app/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="SASE Decision Studio">
+  <meta property="og:description" content="Comparador visual SASE/SSE con scoring, riesgos, cifrado, detección, ENS, Quantum e IA.">
+  <meta property="og:url" content="https://pedri77.github.io/sase-visual-app/">
+  <meta name="twitter:card" content="summary">
   <title>SASE Decision Studio</title>
-  <link rel="stylesheet" href="./styles.css?v=section-export-20260421">
+  <link rel="stylesheet" href="./styles.css?v=hardening-20260421">
 </head>
 <body>
+  <a class="skip-link" href="#dashboard">Saltar al contenido principal</a>
   <header class="topbar">
     <div class="hero-copy">
       <div class="brand-lockup" aria-label="SASE Decision Studio">
@@ -26,8 +38,9 @@
       </div>
     </div>
     <div class="topbar-actions">
-      <button class="icon-button" id="exportPdf" type="button" aria-label="Descargar evaluación completa en PDF" title="Descargar PDF completo">
+      <button class="download-button" id="exportPdf" type="button" aria-label="Descargar evaluación completa en PDF" title="Descargar PDF completo">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"/></svg>
+        <span>PDF completo</span>
       </button>
       <button class="icon-button" id="resetApp" type="button" aria-label="Restablecer evaluación">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.34-5.66M4 5v6h6"/></svg>
@@ -267,7 +280,7 @@
     </section>
   </main>
 
-  <script src="./data.js?v=section-export-20260421"></script>
-  <script src="./app.js?v=section-export-20260421"></script>
+  <script src="./data.js?v=hardening-20260421"></script>
+  <script src="./app.js?v=hardening-20260421"></script>
 </body>
 </html>

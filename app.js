@@ -20,6 +20,8 @@ const {
   profilePresets
 } = window.SASE_DATA;
 
+const STORAGE_KEY = "sase-decision-studio-state-v1";
+
 const state = {
   weights: Object.fromEntries(criteria.map(c => [c.id, c.weight])),
   required: Object.fromEntries(useCases.map(u => [u.label, u.required])),
@@ -34,6 +36,43 @@ const state = {
   scoringSource: "Pesos base",
   frameworkVendors: {}
 };
+
+function persistState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      weights: state.weights,
+      required: state.required,
+      profile: state.profile,
+      scenario: state.scenario,
+      scoringSource: state.scoringSource,
+      frameworkVendors: state.frameworkVendors
+    }));
+  } catch {
+    // Local storage can be unavailable in private or locked-down browsers.
+  }
+}
+
+function restoreState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (saved.weights) criteria.forEach(criterion => {
+      if (Number.isFinite(Number(saved.weights[criterion.id]))) {
+        state.weights[criterion.id] = Number(saved.weights[criterion.id]);
+      }
+    });
+    if (saved.required) useCases.forEach(useCase => {
+      state.required[useCase.label] = Boolean(saved.required[useCase.label]);
+    });
+    if (saved.profile) state.profile = { ...state.profile, ...saved.profile };
+    if (saved.scenario) state.scenario = saved.scenario;
+    if (saved.scoringSource) state.scoringSource = saved.scoringSource;
+    if (saved.frameworkVendors) state.frameworkVendors = saved.frameworkVendors;
+  } catch {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+}
 
 function scoreVendors() {
   const result = vendors.map((vendor, vendorIndex) => {
@@ -271,6 +310,7 @@ function renderCriteria() {
       state.weights[id] = Number(event.target.value);
       state.scoringSource = "Ajuste manual de pesos";
       document.getElementById(`value-${id}`).textContent = event.target.value;
+      persistState();
       refresh();
     });
   });
@@ -286,6 +326,7 @@ function applyProfilePreset(presetId) {
   });
   state.profile.preset = presetId;
   state.scoringSource = `Perfil cliente: ${preset.label}`;
+  persistState();
   renderCriteria();
   renderUseCases();
   renderProfile();
@@ -303,6 +344,7 @@ function syncProfileForm() {
   if (size) state.profile.size = size.value;
   if (soc) state.profile.soc = soc.value;
   if (notes) state.profile.notes = notes.value;
+  persistState();
 }
 
 function renderProfile() {
@@ -384,6 +426,7 @@ function renderUseCases() {
     button.addEventListener("click", event => {
       const label = event.currentTarget.dataset.usecase;
       state.required[label] = !state.required[label];
+      persistState();
       renderUseCases();
       refresh();
     });
@@ -846,6 +889,7 @@ function renderFramework() {
   document.querySelectorAll("[data-framework-vendor]").forEach(input => {
     input.addEventListener("change", event => {
       state.frameworkVendors[event.target.dataset.frameworkVendor] = event.target.checked;
+      persistState();
       renderFrameworkVendorDetails();
     });
   });
@@ -881,17 +925,22 @@ function applyScenario(name) {
   criteria.forEach(criterion => {
     state.weights[criterion.id] = selected[criterion.id] || criterion.weight;
   });
+  persistState();
   renderCriteria();
   refresh();
 }
 
 function wireNavigation() {
   const showView = (viewId, targetId) => {
+    if (!document.getElementById(viewId)) return;
     document.querySelectorAll(".rail-item").forEach(item => item.classList.remove("active"));
     document.querySelectorAll(".view").forEach(view => view.classList.remove("active"));
     const activeRail = document.querySelector(`.rail-item[data-view="${viewId}"]`);
     if (activeRail) activeRail.classList.add("active");
     document.getElementById(viewId).classList.add("active");
+    if (window.location.hash !== `#${viewId}`) {
+      history.replaceState(null, "", `#${viewId}`);
+    }
     if (targetId) {
       window.setTimeout(() => document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
     }
@@ -916,13 +965,23 @@ function wireNavigation() {
     };
     state.scenario = "balanced";
     state.scoringSource = "Pesos base";
+    state.frameworkVendors = {};
+    localStorage.removeItem(STORAGE_KEY);
     document.getElementById("scenario").value = "balanced";
     renderCriteria();
     renderProfile();
     renderUseCases();
+    renderFramework();
     refresh();
   });
   document.getElementById("exportPdf").addEventListener("click", exportPdf);
+
+  const initialView = window.location.hash.slice(1);
+  if (initialView && document.getElementById(initialView)) showView(initialView);
+  window.addEventListener("hashchange", () => {
+    const view = window.location.hash.slice(1);
+    if (view) showView(view);
+  });
 }
 
 function wireSectionExports() {
@@ -1516,6 +1575,8 @@ function refresh() {
 }
 
 function init() {
+  restoreState();
+  document.getElementById("scenario").value = state.scenario || "balanced";
   renderCriteria();
   renderProfile();
   renderUseCases();
