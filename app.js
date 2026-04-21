@@ -30,6 +30,8 @@ const state = {
     soc: "No definido",
     notes: ""
   },
+  scenario: "balanced",
+  scoringSource: "Pesos base",
   frameworkVendors: {}
 };
 
@@ -59,6 +61,10 @@ function scoreVendors() {
 function renderRanking() {
   const ranked = scoreVendors();
   const max = Math.max(...ranked.map(item => item.score));
+  const requiredCount = Object.values(state.required).filter(Boolean).length;
+  const profileLabel = profilePresets[state.profile.preset]?.label || "Balanceado";
+  const scenarioSelect = document.getElementById("scenario");
+  const scenarioName = scenarioSelect.options[scenarioSelect.selectedIndex]?.text || "Balanceado";
   document.getElementById("rankingBars").innerHTML = ranked.map((item, index) => `
     <div class="ranking-row">
       <div class="rank-pill">#${index + 1}</div>
@@ -74,6 +80,12 @@ function renderRanking() {
   const firstEligible = ranked.find(item => item.unmetRequirements.length === 0) || ranked[0];
   document.getElementById("winnerName").textContent = firstEligible.name;
   document.getElementById("winnerReason").textContent = `${firstEligible.bestFor} ${firstEligible.unmetRequirements.length ? "Tiene requisitos imprescindibles pendientes de validar en PoC/RFP." : "Cubre los requisitos imprescindibles con la selección actual."}`;
+  document.getElementById("activeConfig").innerHTML = `
+    <span>Perfil: <strong>${profileLabel}</strong></span>
+    <span>Scoring: <strong>${state.scoringSource}</strong></span>
+    <span>Escenario selector: <strong>${scenarioName}</strong></span>
+    <span>Requisitos imprescindibles: <strong>${requiredCount}</strong></span>
+  `;
   document.getElementById("gateCount").textContent = ranked.reduce((sum, item) => sum + item.unmetRequirements.length, 0);
   document.getElementById("riskAverage").textContent = (vendors.reduce((sum, v) => sum + v.risk, 0) / vendors.length).toFixed(1);
 }
@@ -257,6 +269,7 @@ function renderCriteria() {
     input.addEventListener("input", event => {
       const id = event.target.dataset.criterion;
       state.weights[id] = Number(event.target.value);
+      state.scoringSource = "Ajuste manual de pesos";
       document.getElementById(`value-${id}`).textContent = event.target.value;
       refresh();
     });
@@ -272,10 +285,24 @@ function applyProfilePreset(presetId) {
     state.required[useCase.label] = preset.required.includes(useCase.label);
   });
   state.profile.preset = presetId;
+  state.scoringSource = `Perfil cliente: ${preset.label}`;
   renderCriteria();
   renderUseCases();
   renderProfile();
   refresh();
+}
+
+function syncProfileForm() {
+  const preset = document.getElementById("profilePreset");
+  const sector = document.getElementById("profileSector");
+  const size = document.getElementById("profileSize");
+  const soc = document.getElementById("profileSoc");
+  const notes = document.getElementById("profileNotes");
+  if (preset) state.profile.preset = preset.value;
+  if (sector) state.profile.sector = sector.value;
+  if (size) state.profile.size = size.value;
+  if (soc) state.profile.soc = soc.value;
+  if (notes) state.profile.notes = notes.value;
 }
 
 function renderProfile() {
@@ -314,11 +341,24 @@ function renderProfile() {
     </article>
   `;
 
+  document.getElementById("profilePreset").addEventListener("change", () => {
+    syncProfileForm();
+    applyProfilePreset(document.getElementById("profilePreset").value);
+  });
+
+  ["profileSector", "profileSize", "profileSoc"].forEach(id => {
+    document.getElementById(id).addEventListener("change", () => {
+      syncProfileForm();
+      refresh();
+    });
+  });
+
+  document.getElementById("profileNotes").addEventListener("input", () => {
+    syncProfileForm();
+  });
+
   document.getElementById("applyProfile").addEventListener("click", () => {
-    state.profile.sector = document.getElementById("profileSector").value;
-    state.profile.size = document.getElementById("profileSize").value;
-    state.profile.soc = document.getElementById("profileSoc").value;
-    state.profile.notes = document.getElementById("profileNotes").value;
+    syncProfileForm();
     applyProfilePreset(document.getElementById("profilePreset").value);
   });
 }
@@ -810,6 +850,10 @@ function renderFramework() {
 
 function applyScenario(name) {
   const selected = scenarios[name] || {};
+  state.scenario = name;
+  const scenarioSelect = document.getElementById("scenario");
+  const scenarioName = scenarioSelect.options[scenarioSelect.selectedIndex]?.text || "Balanceado";
+  state.scoringSource = `Escenario: ${scenarioName}`;
   criteria.forEach(criterion => {
     state.weights[criterion.id] = selected[criterion.id] || criterion.weight;
   });
@@ -839,8 +883,18 @@ function wireNavigation() {
   document.getElementById("resetApp").addEventListener("click", () => {
     criteria.forEach(criterion => state.weights[criterion.id] = criterion.weight);
     useCases.forEach(useCase => state.required[useCase.label] = false);
+    state.profile = {
+      preset: "balanced",
+      sector: "No definido",
+      size: "No definido",
+      soc: "No definido",
+      notes: ""
+    };
+    state.scenario = "balanced";
+    state.scoringSource = "Pesos base";
     document.getElementById("scenario").value = "balanced";
     renderCriteria();
+    renderProfile();
     renderUseCases();
     refresh();
   });
@@ -848,6 +902,7 @@ function wireNavigation() {
 }
 
 function exportPdf() {
+  syncProfileForm();
   const pdf = createEvaluationPdf();
   const anchor = document.createElement("a");
   anchor.href = URL.createObjectURL(pdf);
@@ -875,6 +930,7 @@ function createEvaluationPdf() {
   doc.section("1. Resumen ejecutivo");
   doc.kv("Recomendacion preliminar", winner.name);
   doc.kv("Perfil cliente", `${profilePresets[state.profile.preset]?.label || "Balanceado"} | ${state.profile.sector} | ${state.profile.size} | ${state.profile.soc}`);
+  doc.kv("Scoring aplicado", state.scoringSource);
   if (state.profile.notes) doc.kv("Notas cliente", state.profile.notes);
   doc.paragraph(winner.bestFor);
   doc.kv("Requisitos pendientes", String(ranked.reduce((sum, item) => sum + item.unmetRequirements.length, 0)));

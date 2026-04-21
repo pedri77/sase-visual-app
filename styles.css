@@ -297,6 +297,33 @@ select:focus-visible {
   color: var(--muted);
 }
 
+.config-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.config-summary span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 4px 7px;
+  border-radius: 5px;
+  background: #eef2f7;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.config-summary strong {
+  display: inline;
+  margin-left: 4px;
+  color: var(--ink);
+  font-size: inherit;
+  line-height: inherit;
+}
+
 .scenario-control {
   display: grid;
   gap: 7px;
