@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SASE Decision Studio</title>
-  <link rel="stylesheet" href="./styles.css?v=state-flow-20260421">
+  <link rel="stylesheet" href="./styles.css?v=section-export-20260421">
 </head>
 <body>
   <header class="topbar">
@@ -18,14 +18,15 @@
         <button class="hero-chip" data-view="dashboard" data-target="rankingBars" type="button">SASE/SSE</button>
         <button class="hero-chip" data-view="dashboard" data-target="vendorStrip" type="button">ENS</button>
         <button class="hero-chip" data-view="technical" type="button">Cifrado</button>
-        <button class="hero-chip" data-view="innovation" type="button">XSIAM/XDR</button>
+        <button class="hero-chip" data-view="ai" type="button">XSIAM/XDR</button>
         <button class="hero-chip" data-view="capabilities" type="button">Funcionalidades</button>
         <button class="hero-chip" data-view="deployment" type="button">On-premise</button>
-        <button class="hero-chip" data-view="innovation" type="button">Quantum/IA</button>
+        <button class="hero-chip" data-view="quantum" type="button">Quantum</button>
+        <button class="hero-chip" data-view="ai" type="button">IA</button>
       </div>
     </div>
     <div class="topbar-actions">
-      <button class="icon-button" id="exportPdf" type="button" aria-label="Descargar evaluación en PDF" title="Descargar PDF">
+      <button class="icon-button" id="exportPdf" type="button" aria-label="Descargar evaluación completa en PDF" title="Descargar PDF completo">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"/></svg>
       </button>
       <button class="icon-button" id="resetApp" type="button" aria-label="Restablecer evaluación">
@@ -76,9 +77,13 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17h16M7 17V7h10v10M9 7l3-3 3 3"/></svg>
         <span>Implantación</span>
       </button>
-      <button class="rail-item" data-view="innovation" type="button">
+      <button class="rail-item" data-view="quantum" type="button">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v4m0 10v4M5.64 5.64l2.83 2.83m7.06 7.06 2.83 2.83M3 12h4m10 0h4M5.64 18.36l2.83-2.83m7.06-7.06 2.83-2.83"/></svg>
-        <span>Quantum/IA</span>
+        <span>Quantum</span>
+      </button>
+      <button class="rail-item" data-view="ai" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a4 4 0 0 1 4 4v1h1a3 3 0 0 1 0 6h-1v1a4 4 0 0 1-8 0v-1H7a3 3 0 0 1 0-6h1V8a4 4 0 0 1 4-4Zm0 3v10"/></svg>
+        <span>IA</span>
       </button>
     </aside>
 
@@ -240,19 +245,29 @@
         </section>
       </section>
 
-      <section class="view" id="innovation">
+      <section class="view" id="quantum">
         <section class="visual-panel">
           <div class="panel-title">
-            <h2>Valoración quantum e IA</h2>
-            <span>PQC, crypto-agility y seguridad de IA</span>
+            <h2>Valoración quantum</h2>
+            <span>PQC, crypto-agility y preparación post-cuántica</span>
           </div>
-          <div class="innovation-grid" id="innovationGrid"></div>
+          <div class="innovation-grid" id="quantumGrid"></div>
+        </section>
+      </section>
+
+      <section class="view" id="ai">
+        <section class="visual-panel">
+          <div class="panel-title">
+            <h2>Valoración IA</h2>
+            <span>Seguridad de IA, GenAI, agentes y XSIAM/XDR</span>
+          </div>
+          <div class="innovation-grid" id="aiGrid"></div>
         </section>
       </section>
     </section>
   </main>
 
-  <script src="./data.js?v=state-flow-20260421"></script>
-  <script src="./app.js?v=state-flow-20260421"></script>
+  <script src="./data.js?v=section-export-20260421"></script>
+  <script src="./app.js?v=section-export-20260421"></script>
 </body>
 </html>

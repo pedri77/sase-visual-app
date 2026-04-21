@@ -527,8 +527,8 @@ function renderDeployment() {
   }).join("");
 }
 
-function renderInnovation() {
-  document.getElementById("innovationGrid").innerHTML = quantumAiItems.map(item => {
+function renderQuantum() {
+  document.getElementById("quantumGrid").innerHTML = quantumAiItems.map(item => {
     const vendor = vendors.find(v => v.name === item.vendor);
     return `
       <article class="innovation-item" style="--vendor-accent:${vendor.color}">
@@ -538,10 +538,34 @@ function renderInnovation() {
         </div>
         <div class="score-pair">
           <div class="badge"><span>Quantum/PQC</span><strong>${item.quantumScore}/5</strong></div>
-          <div class="badge"><span>IA</span><strong>${item.aiScore}/5</strong></div>
+          <div class="badge"><span>Preparación</span><strong>${item.quantumScore >= 4 ? "Alta" : "Media"}</strong></div>
         </div>
         <div class="innovation-meta">
           <div><span>Quantum / PQC</span><p>${item.quantum}</p></div>
+          <div><span>Validar en PoC</span><p>${item.validate}</p></div>
+        </div>
+        <div class="vendor-links">
+          ${item.sources.map((source, index) => `<a href="${source}" target="_blank" rel="noreferrer">Fuente ${index + 1}</a>`).join("")}
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+function renderAi() {
+  document.getElementById("aiGrid").innerHTML = quantumAiItems.map(item => {
+    const vendor = vendors.find(v => v.name === item.vendor);
+    return `
+      <article class="innovation-item" style="--vendor-accent:${vendor.color}">
+        <div class="vendor-card-head">
+          <img src="${vendor.logo}" alt="Logo ${item.vendor}" loading="lazy">
+          <strong>${item.vendor}</strong>
+        </div>
+        <div class="score-pair">
+          <div class="badge"><span>IA</span><strong>${item.aiScore}/5</strong></div>
+          <div class="badge"><span>Madurez</span><strong>${item.aiScore >= 5 ? "Muy alta" : "Alta"}</strong></div>
+        </div>
+        <div class="innovation-meta">
           <div><span>IA / Seguridad de IA</span><p>${item.ai}</p></div>
           <div><span>Validar en PoC</span><p>${item.validate}</p></div>
         </div>
@@ -901,14 +925,38 @@ function wireNavigation() {
   document.getElementById("exportPdf").addEventListener("click", exportPdf);
 }
 
-function exportPdf() {
-  syncProfileForm();
-  const pdf = createEvaluationPdf();
+function wireSectionExports() {
+  document.querySelectorAll(".view > .visual-panel > .panel-title").forEach(title => {
+    const view = title.closest(".view");
+    if (!view || title.querySelector("[data-export-section]")) return;
+    const button = document.createElement("button");
+    button.className = "section-export";
+    button.type = "button";
+    button.dataset.exportSection = view.id;
+    button.title = "Descargar esta sección en PDF";
+    button.setAttribute("aria-label", "Descargar esta sección en PDF");
+    button.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"/></svg><span>PDF sección</span>`;
+    button.addEventListener("click", () => exportSectionPdf(view.id));
+    title.appendChild(button);
+  });
+}
+
+function exportBlob(blob, filename) {
   const anchor = document.createElement("a");
-  anchor.href = URL.createObjectURL(pdf);
-  anchor.download = "sase-decision-studio-evaluacion.pdf";
+  anchor.href = URL.createObjectURL(blob);
+  anchor.download = filename;
   anchor.click();
   URL.revokeObjectURL(anchor.href);
+}
+
+function exportPdf() {
+  syncProfileForm();
+  exportBlob(createEvaluationPdf(), "sase-decision-studio-evaluacion-completa.pdf");
+}
+
+function exportSectionPdf(sectionId) {
+  syncProfileForm();
+  exportBlob(createSectionPdf(sectionId), `sase-decision-studio-${sectionId}.pdf`);
 }
 
 function createEvaluationPdf() {
@@ -1039,16 +1087,23 @@ function createEvaluationPdf() {
     doc.kv("Casos publicos", item.success.map(story => `${story.label}: ${story.url}`).join(" | "));
   });
 
-  doc.section("10. Valoracion quantum e IA");
+  doc.section("10. Valoracion quantum / PQC");
   quantumAiItems.forEach(item => {
     doc.subsection(item.vendor);
     doc.kv("Quantum / PQC", `${item.quantumScore}/5 - ${item.quantum}`);
+    doc.kv("Validar en PoC", item.validate);
+    doc.kv("Fuentes", item.sources.join(" | "));
+  });
+
+  doc.section("11. Valoracion IA");
+  quantumAiItems.forEach(item => {
+    doc.subsection(item.vendor);
     doc.kv("IA / Seguridad de IA", `${item.aiScore}/5 - ${item.ai}`);
     doc.kv("Validar en PoC", item.validate);
     doc.kv("Fuentes", item.sources.join(" | "));
   });
 
-  doc.section("11. Detection, Intelligence & Data Quality");
+  doc.section("12. Detection, Intelligence & Data Quality");
   doc.barChart("Scoring SOC/GRC avanzado", vendors.map((vendor, index) => ({ label: vendor.name, value: advancedScore(index), color: vendor.color })), 5);
   advancedMetrics.forEach(metric => {
     doc.kv(metric.label, `Peso ${metric.weight}% | ${vendors.map((vendor, index) => `${vendor.name}: ${metric.scores[index]}`).join(" | ")}`);
@@ -1075,7 +1130,7 @@ function createEvaluationPdf() {
     doc.kv(row.type, vendors.map((vendor, index) => `${vendor.name}: ${row.scores[index]}/5`).join(" | "));
   });
 
-  doc.section("12. Evidencia y confianza");
+  doc.section("13. Evidencia y confianza");
   evidenceItems.forEach(item => {
     doc.subsection(`${item.vendor} - confianza ${item.confidence}/5`);
     item.items.forEach(evidence => {
@@ -1083,9 +1138,171 @@ function createEvaluationPdf() {
     });
   });
 
-  doc.section("13. Notas de uso");
+  doc.section("14. Notas de uso");
   doc.paragraph("La puntuacion agregada no debe sustituir la validacion de requisitos imprescindibles. Si un caso imprescindible no queda cubierto, el proveedor debe quedar como no apto, apto con condiciones o apto solo con arquitectura complementaria.");
   doc.paragraph("La informacion de Gartner, casos publicos y fabricantes debe contrastarse con PoC, contrato, referencias privadas y matriz de versiones/advisories del entorno real.");
+
+  return doc.toBlob();
+}
+
+function createSectionPdf(sectionId) {
+  const doc = createPdfWriter();
+  const ranked = scoreVendors();
+  const selectedScenario = document.getElementById("scenario");
+  const scenarioName = selectedScenario.options[selectedScenario.selectedIndex].text;
+  const winner = ranked.find(item => item.unmetRequirements.length === 0) || ranked[0];
+  const sectionNames = {
+    dashboard: "Panel ejecutivo",
+    profile: "Perfil del cliente",
+    assessment: "Scoring",
+    usecases: "Casos imprescindibles",
+    risks: "Riesgos y vulnerabilidades",
+    framework: "Detección, inteligencia y calidad del dato",
+    evidence: "Evidencia y confianza",
+    capabilities: "Funcionalidades por producto y marca",
+    technical: "Cifrado y especificaciones técnicas",
+    deployment: "Implementación, provisión y on-premise",
+    quantum: "Valoración quantum",
+    ai: "Valoración IA"
+  };
+
+  doc.cover("SASE Decision Studio", sectionNames[sectionId] || "Sección", [
+    `Fecha: ${new Date().toLocaleDateString("es-ES")}`,
+    `Perfil: ${profilePresets[state.profile.preset]?.label || "Balanceado"}`,
+    `Scoring aplicado: ${state.scoringSource}`,
+    `Escenario selector: ${scenarioName}`
+  ]);
+
+  doc.section("Configuración aplicada");
+  doc.kv("Recomendación preliminar", winner.name);
+  doc.kv("Perfil cliente", `${state.profile.sector} | ${state.profile.size} | ${state.profile.soc}`);
+  doc.kv("Notas", state.profile.notes || "Sin notas");
+  doc.kv("Requisitos imprescindibles", Object.entries(state.required).filter(([, required]) => required).map(([label]) => label).join("; ") || "Ninguno seleccionado");
+
+  if (sectionId === "dashboard") {
+    doc.section("Panel ejecutivo");
+    doc.barChart("Ranking ponderado", ranked.map(item => ({ label: item.name, value: item.score, color: item.color })), 5);
+    ranked.forEach(item => doc.kv(item.name, `${item.score.toFixed(2)}/5 | ${item.unmetRequirements.length ? `Requiere validar: ${item.unmetRequirements.join(", ")}` : "Cubre requisitos imprescindibles"}`));
+    vendors.forEach(vendor => {
+      doc.subsection(vendor.name);
+      doc.kv("Ventajas", vendor.bestFor);
+      doc.kv("Cautelas", vendor.caution);
+      doc.kv("ENS", `${vendor.ens}. ${vendor.ensDetail}`);
+    });
+  }
+
+  if (sectionId === "profile") {
+    doc.section("Perfil del cliente");
+    Object.entries(profilePresets).forEach(([, preset]) => {
+      doc.subsection(preset.label);
+      doc.kv("Pesos sugeridos", Object.entries(preset.weights).map(([key, value]) => `${criteria.find(c => c.id === key)?.label || key}: ${value}`).join(" | ") || "Pesos base");
+      doc.kv("Casos sugeridos", preset.required.join("; ") || "Ninguno");
+    });
+  }
+
+  if (sectionId === "assessment") {
+    doc.section("Scoring y pesos");
+    criteria.forEach(criterion => doc.kv(criterion.label, `Peso actual ${state.weights[criterion.id]} | ${vendors.map((vendor, index) => `${vendor.name}: ${criterion.scores[index]}`).join(" | ")}`));
+  }
+
+  if (sectionId === "usecases") {
+    doc.section("Casos imprescindibles");
+    useCases.forEach(useCase => doc.kv(useCase.label, `${state.required[useCase.label] ? "Imprescindible" : "Deseable"} | ${vendors.map((vendor, index) => `${vendor.name}: ${useCase.fit[index]}`).join(" | ")}`));
+  }
+
+  if (sectionId === "risks") {
+    doc.section("Riesgos y vulnerabilidades");
+    riskItems.forEach(item => {
+      doc.subsection(`${item.vendor} - Riesgo ${item.level}`);
+      item.items.forEach(risk => doc.bullet(risk));
+      doc.kv("Acción", item.action);
+    });
+    patchResponseItems.forEach(item => doc.kv(`${item.vendor} parches`, `${item.cve} | ${item.responseTime} | ${item.status}`));
+    mediaIncidentItems.forEach(item => doc.kv(`${item.vendor} incidente`, `${item.date} | ${item.type} | ${item.impact} | ${item.url}`));
+    cveItems.forEach(item => doc.kv(`${item.vendor} CVEs`, item.cves.map(cve => `${cve.id} (${cve.severity})`).join("; ")));
+  }
+
+  if (sectionId === "framework") {
+    doc.section("Detección, inteligencia y calidad del dato");
+    doc.barChart("Scoring SOC/GRC avanzado", vendors.map((vendor, index) => ({ label: vendor.name, value: advancedScore(index), color: vendor.color })), 5);
+    advancedMetrics.forEach(metric => doc.kv(metric.label, `Peso ${metric.weight}% | ${vendors.map((vendor, index) => `${vendor.name}: ${metric.scores[index]}`).join(" | ")}`));
+    selectedFrameworkIndexes().forEach(({ vendor, index }) => {
+      doc.subsection(`${vendor.name} - análisis específico`);
+      doc.kv("Score global", `${advancedScore(index).toFixed(2)}/5`);
+      threatHeatmap.forEach(row => doc.kv(row.type, `${row.scores[index]}/5`));
+      const integration = integrationProtocolItems.find(item => item.vendor === vendor.name);
+      if (integration) doc.kv("Integración", `${integration.protocols.join(", ")} | ${integration.tools.join(", ")}`);
+    });
+  }
+
+  if (sectionId === "evidence") {
+    doc.section("Evidencia y confianza");
+    evidenceItems.forEach(item => {
+      doc.subsection(`${item.vendor} - confianza ${item.confidence}/5`);
+      item.items.forEach(evidence => doc.kv(evidence.type, `${evidence.title} | Confianza ${evidence.confidence}/5${evidence.url ? ` | ${evidence.url}` : ""}`));
+    });
+  }
+
+  if (sectionId === "capabilities") {
+    doc.section("Funcionalidades por producto y marca");
+    productCapabilities.forEach(item => {
+      doc.subsection(`${item.vendor} - ${item.primary}`);
+      doc.kv("Grado de implementación", `${item.maturity}/5 - ${item.implementationGrade}`);
+      doc.kv("Funcionalidades", item.core.join(", "));
+      doc.kv("Otras soluciones", item.adjacent.join(", "));
+      doc.kv("Diferenciadores", item.differentiators.join(" | "));
+      doc.kv("Precaución", item.caution);
+    });
+  }
+
+  if (sectionId === "technical") {
+    doc.section("Cifrado y especificaciones técnicas");
+    techItems.forEach(item => {
+      doc.subsection(item.vendor);
+      doc.kv("Túnel usuario", item.tunnel);
+      doc.kv("Sedes / forwarding", item.site);
+      doc.kv("TLS inspection", item.tls);
+      doc.kv("Validar en PoC", item.validate);
+    });
+    encryptionSpecItems.forEach(item => {
+      doc.subsection(`${item.vendor} - especificaciones`);
+      doc.kv("Túnel usuario", item.userTunnel);
+      doc.kv("Sede / edge", item.siteTunnel);
+      doc.kv("Algoritmos", item.algorithms);
+      doc.kv("Docs oficiales", item.officialDocs.map(source => `${source.label}: ${source.url}`).join(" | "));
+    });
+  }
+
+  if (sectionId === "deployment") {
+    doc.section("Implementación, provisión y on-premise");
+    deploymentItems.forEach(item => {
+      doc.subsection(item.vendor);
+      doc.kv("Implementación", item.implementation);
+      doc.kv("On-premise", item.onprem);
+      doc.kv("Validar en PoC", item.poc);
+      doc.kv("Casos públicos", item.success.map(story => `${story.label}: ${story.url}`).join(" | "));
+    });
+  }
+
+  if (sectionId === "quantum") {
+    doc.section("Valoración quantum / PQC");
+    quantumAiItems.forEach(item => {
+      doc.subsection(item.vendor);
+      doc.kv("Quantum / PQC", `${item.quantumScore}/5 - ${item.quantum}`);
+      doc.kv("Validar en PoC", item.validate);
+      doc.kv("Fuentes", item.sources.join(" | "));
+    });
+  }
+
+  if (sectionId === "ai") {
+    doc.section("Valoración IA");
+    quantumAiItems.forEach(item => {
+      doc.subsection(item.vendor);
+      doc.kv("IA / Seguridad de IA", `${item.aiScore}/5 - ${item.ai}`);
+      doc.kv("Validar en PoC", item.validate);
+      doc.kv("Fuentes", item.sources.join(" | "));
+    });
+  }
 
   return doc.toBlob();
 }
@@ -1305,12 +1522,14 @@ function init() {
   renderRisks();
   renderTechnical();
   renderDeployment();
-  renderInnovation();
+  renderQuantum();
+  renderAi();
   renderCapabilities();
   renderFramework();
   renderEvidence();
   renderVendors();
   wireNavigation();
+  wireSectionExports();
   refresh();
 }
 

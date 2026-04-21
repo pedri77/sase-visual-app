@@ -398,6 +398,37 @@ select {
   font-weight: 700;
 }
 
+.section-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  margin-left: auto;
+  border: 1px solid rgba(15, 118, 110, 0.22);
+  border-radius: 7px;
+  padding: 6px 9px;
+  color: var(--teal);
+  background: #ddf7f2;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.section-export:hover {
+  border-color: rgba(15, 118, 110, 0.44);
+  background: #c9f2eb;
+}
+
+.section-export svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .ranking-bars {
   display: grid;
   gap: 12px;
@@ -1244,7 +1275,7 @@ input[type="range"] {
 
   .rail {
     position: static;
-    grid-template-columns: repeat(11, minmax(0, 1fr));
+    grid-template-columns: repeat(12, minmax(0, 1fr));
   }
 
   .rail-item {
@@ -1297,6 +1328,10 @@ input[type="range"] {
   .panel-title {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .section-export {
+    margin-left: 0;
   }
 }
 
