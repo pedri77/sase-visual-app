@@ -741,6 +741,22 @@ input[type="range"] {
   background: white;
 }
 
+.risk-subpanel {
+  min-width: 760px;
+  border-bottom: 1px solid var(--line);
+}
+
+.risk-subpanel:last-child {
+  border-bottom: 0;
+}
+
+.risk-subpanel h3 {
+  margin: 0;
+  padding: 12px;
+  color: var(--ink);
+  font-size: 15px;
+}
+
 .cve-table table,
 .heatmap-panel table {
   width: 100%;
@@ -766,6 +782,16 @@ input[type="range"] {
   text-transform: uppercase;
 }
 
+.cve-table a {
+  color: var(--teal);
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.cve-table a:hover {
+  text-decoration: underline;
+}
+
 .cve-badge {
   display: inline-flex;
   margin: 0 4px 4px 0;
@@ -783,6 +809,19 @@ input[type="range"] {
 
 .cve-badge.medium {
   background: var(--blue);
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  margin-bottom: 4px;
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: #eef2f7;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 850;
 }
 
 .risk-item p {

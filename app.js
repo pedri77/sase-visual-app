@@ -5,6 +5,8 @@ const {
   productCapabilities = [],
   riskItems,
   cveItems,
+  patchResponseItems = [],
+  mediaIncidentItems = [],
   advancedMetrics,
   threatHeatmap,
   techItems,
@@ -162,6 +164,58 @@ function renderRiskVisual() {
 
 function renderCveTable() {
   document.getElementById("cveTable").innerHTML = `
+    <div class="risk-subpanel">
+      <h3>Respuesta a CVEs y parches</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Fabricante</th>
+            <th>CVE / producto</th>
+            <th>Parche</th>
+            <th>Tiempo de respuesta</th>
+            <th>Estado / fuente</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${patchResponseItems.map(item => `
+            <tr>
+              <td><strong>${item.vendor}</strong><br><small>${item.disclosed}</small></td>
+              <td>${item.cve}<br><small>${item.product}</small></td>
+              <td>${item.patch}</td>
+              <td>${item.responseTime}</td>
+              <td><span class="status-pill">${item.status}</span><br><small>${item.evidence}</small><br><a href="${item.source}" target="_blank" rel="noreferrer">Fuente</a></td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+    <div class="risk-subpanel">
+      <h3>Fugas e incidentes documentados en medios</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Fabricante</th>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Impacto reportado</th>
+            <th>Noticia</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${mediaIncidentItems.map(item => `
+            <tr>
+              <td><strong>${item.vendor}</strong></td>
+              <td>${item.date}</td>
+              <td><span class="status-pill">${item.type}</span></td>
+              <td>${item.impact}</td>
+              <td><a href="${item.url}" target="_blank" rel="noreferrer">${item.source}</a></td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+    <div class="risk-subpanel">
+      <h3>Relación de CVEs/advisories</h3>
     <table>
       <thead>
         <tr>
@@ -182,6 +236,7 @@ function renderCveTable() {
         `).join("")}
       </tbody>
     </table>
+    </div>
   `;
 }
 
@@ -646,6 +701,12 @@ function createEvaluationPdf() {
   });
   cveItems.forEach(item => {
     doc.kv(`${item.vendor} CVEs`, item.cves.map(cve => `${cve.id} (${cve.severity}, ${cve.product})`).join("; "));
+  });
+  patchResponseItems.forEach(item => {
+    doc.kv(`${item.vendor} respuesta`, `${item.cve} | ${item.patch} | ${item.responseTime} | ${item.status}`);
+  });
+  mediaIncidentItems.forEach(item => {
+    doc.kv(`${item.vendor} incidente medio`, `${item.date} | ${item.type} | ${item.impact} | ${item.url}`);
   });
 
   doc.section("7. Funcionalidades por producto y marca");

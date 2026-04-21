@@ -291,6 +291,115 @@ cveItems: [
   }
 ],
 
+patchResponseItems: [
+  {
+    vendor: "Zscaler",
+    cve: "CVE-2026-22569 / CVE-2025-54983",
+    product: "Zscaler Client Connector Windows",
+    disclosed: "2026-03-31 / 2025-11-12",
+    patch: "Versiones corregidas 4.7.0.141, 4.8.0.63 y 4.6.0.216/4.7.0.47 según CVE.",
+    responseTime: "Disponible al publicar CVE; fecha exacta de release no separada en NVD.",
+    status: "Parche disponible",
+    evidence: "NVD referencia release summary del fabricante.",
+    source: "https://nvd.nist.gov/vuln/detail/CVE-2026-22569"
+  },
+  {
+    vendor: "Netskope",
+    cve: "CVE-2026-2809 / NSKPSA-2026-001",
+    product: "Netskope Client + Endpoint DLP",
+    disclosed: "2026-03-12",
+    patch: "R135 o superior; backport R132.0.20.",
+    responseTime: "0 días desde publicación pública; parche indicado en advisory inicial.",
+    status: "Parche disponible",
+    evidence: "Netskope indica que no conoce explotación activa.",
+    source: "https://www.netskope.com/resources/netskope-resources/netskope-security-advisory-nskpsa-2026-001"
+  },
+  {
+    vendor: "Palo Alto Networks",
+    cve: "CVE-2026-0227",
+    product: "PAN-OS / Prisma Access GlobalProtect",
+    disclosed: "2026-01-14",
+    patch: "Múltiples hotfixes PAN-OS; Prisma Access 11.2 >= 11.2.7-h8 y 10.2 >= 10.2.10-h29.",
+    responseTime: "0 días para fixes publicados; Prisma Access aparece completado para todos los clientes el 2026-02-07 (~24 días).",
+    status: "Parche disponible / upgrade gestionado completado",
+    evidence: "Sin explotación maliciosa conocida para este CVE según advisory.",
+    source: "https://security.paloaltonetworks.com/CVE-2026-0227"
+  },
+  {
+    vendor: "Fortinet",
+    cve: "CVE-2025-59718 / CVE-2025-59719 / CVE-2026-24858",
+    product: "FortiCloud SSO en FortiOS, FortiProxy, FortiWeb y otros",
+    disclosed: "2025-12-09 / 2026-01-27",
+    patch: "CVE-2025-59718/59719: versiones FortiOS 7.6.4+, FortiProxy 7.6.4+, FortiSwitchManager 7.2.7+, FortiWeb 8.0.1+. CVE-2026-24858: FortiOS 7.6.6 y ramas corregidas según FG-IR-26-060.",
+    responseTime: "59718/59719: parche en disclosure pero explotación reportada días después. 24858: Fortinet bloqueó cuentas el 2026-01-22, deshabilitó SSO cloud el 2026-01-26 y empezó parches 2026-01-28/29 (~1-7 días según hito).",
+    status: "Parche disponible; explotación activa documentada",
+    evidence: "CISA KEV y medios reportan explotación y robo de configuración en algunos casos.",
+    source: "https://www.helpnetsecurity.com/2026/01/28/fortinet-forticloud-sso-zero-day-vulnerability-cve-2026-24858/"
+  },
+  {
+    vendor: "Cisco",
+    cve: "CVE-2026-20122 / 20126 / 20128 / 20129 / 20133",
+    product: "Cisco Catalyst SD-WAN Manager",
+    disclosed: "2026-02-25",
+    patch: "Primeras versiones corregidas: 20.9.8.2, 20.12.6.1, 20.12.5.3, 20.15.4.2 y ramas indicadas por Cisco.",
+    responseTime: "0 días para fixes publicados; advisory actualizado el 2026-03-05 por explotación y el 2026-03-18 con IoC/fixed releases.",
+    status: "Parche disponible; explotación activa para parte de los CVEs",
+    evidence: "Cisco confirmó explotación de CVE-2026-20122 y CVE-2026-20128; CISA añadió CVE-2026-20133 a KEV el 2026-04-21.",
+    source: "https://www.cisco.com/c/en/us/support/docs/csa/cisco-sa-sdwan-authbp-qwCX8D4v.html"
+  }
+],
+
+mediaIncidentItems: [
+  {
+    vendor: "Zscaler",
+    date: "2025-09-02",
+    type: "Fuga por tercero / CRM",
+    impact: "Salesloft Drift/Salesforce expuso datos de clientes, licencias y ciertos casos de soporte. Zscaler indicó que productos e infraestructura no fueron comprometidos.",
+    source: "TechRadar",
+    url: "https://www.techradar.com/pro/security/zscaler-says-it-suffered-data-breach-following-salesloft-drift-compromise"
+  },
+  {
+    vendor: "Netskope",
+    date: "2026-04-21",
+    type: "Sin fuga pública localizada",
+    impact: "No se ha localizado una fuga pública comparable de producto/SASE en las fuentes revisadas; mantener vigilancia en RFP y solicitar declaración formal.",
+    source: "Evaluación documental",
+    url: "https://www.netskope.com/resources/netskope-resources/netskope-security-advisory-nskpsa-2026-001"
+  },
+  {
+    vendor: "Palo Alto Networks",
+    date: "2025-09-02",
+    type: "Fuga por tercero / CRM y soporte",
+    impact: "BleepingComputer reportó exposición de datos de clientes y casos de soporte por el incidente Salesloft Drift/Salesforce; Palo Alto indicó que no afectó productos, sistemas ni servicios.",
+    source: "BleepingComputer",
+    url: "https://www.bleepingcomputer.com/news/security/palo-alto-networks-data-breach-exposes-customer-info-support-cases/"
+  },
+  {
+    vendor: "Palo Alto Networks",
+    date: "2025-02-19",
+    type: "Explotación de producto",
+    impact: "Medios reportaron explotación activa de vulnerabilidades PAN-OS encadenadas contra interfaces de gestión expuestas; no equivale por sí sola a fuga confirmada, pero sí a riesgo de compromiso.",
+    source: "TechCrunch",
+    url: "https://techcrunch.com/2025/02/19/palo-alto-networks-warns-of-another-firewall-vulnerability-under-attack-by-hackers/"
+  },
+  {
+    vendor: "Fortinet",
+    date: "2026-01-28",
+    type: "Explotación con exfiltración de configuración",
+    impact: "Medios y firmas de seguridad reportaron creación de cuentas rogue y robo de datos/configuración de firewalls FortiGate relacionados con FortiCloud SSO.",
+    source: "TechRadar",
+    url: "https://www.techradar.com/pro/security/fortinet-fortigate-devices-hit-in-automated-attacks-which-create-rogue-accounts-and-steal-firewall-data"
+  },
+  {
+    vendor: "Cisco",
+    date: "2026-03-05 / 2026-04-21",
+    type: "Explotación de SD-WAN Manager",
+    impact: "Cisco confirmó explotación de CVE-2026-20122 y CVE-2026-20128; CISA/medios señalaron explotación adicional de SD-WAN Manager. Riesgo de credenciales/privilegios y control del plano de gestión.",
+    source: "Help Net Security",
+    url: "https://www.helpnetsecurity.com/2026/04/21/cisa-flags-another-cisco-catalyst-sd-wan-manager-bug-as-exploited-cve-2026-20133/"
+  }
+],
+
 advancedMetrics: [
   { id: "functional", label: "Functional Fit", weight: 25, scores: [4.3, 4.5, 4.6, 4.2, 4.2] },
   { id: "detection", label: "Detection Effectiveness", weight: 20, scores: [4.6, 4.4, 4.7, 4.2, 4.4] },
