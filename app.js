@@ -17,7 +17,8 @@ const {
   quantumAiItems,
   scenarios,
   evidenceItems,
-  profilePresets
+  profilePresets,
+  metricGuidance = {}
 } = window.SASE_DATA;
 
 const STORAGE_KEY = "sase-decision-studio-state-v1";
@@ -411,7 +412,10 @@ function renderCveTable() {
 function renderCriteria() {
   document.getElementById("criteriaList").innerHTML = criteria.map(criterion => `
     <div class="criterion">
-      <label for="weight-${criterion.id}">${criterion.label}</label>
+      <div class="criterion-label">
+        <label for="weight-${criterion.id}">${criterion.label}</label>
+        ${renderMetricInfo(criterion.id)}
+      </div>
       <input id="weight-${criterion.id}" data-criterion="${criterion.id}" type="range" min="1" max="5" step="1" value="${state.weights[criterion.id]}">
       <span class="weight-value" id="value-${criterion.id}">${state.weights[criterion.id]}</span>
     </div>
@@ -427,6 +431,46 @@ function renderCriteria() {
       refresh();
     });
   });
+}
+
+function renderMetricInfo(metricId) {
+  const guide = metricGuidance[metricId];
+  if (!guide) return "";
+  return `
+    <details class="metric-info">
+      <summary aria-label="Ver explicación de la métrica">i</summary>
+      <div class="metric-popover">
+        <strong>Cómo se pondera</strong>
+        <p>${guide.basis}</p>
+        <strong>Evidencia usada</strong>
+        <p>${guide.evidence}</p>
+        <strong>Validación recomendada</strong>
+        <p>${guide.validation}</p>
+        <div class="metric-links">
+          ${guide.links.map((link, index) => `<a href="${link}" target="_blank" rel="noreferrer">Fuente ${index + 1}</a>`).join("")}
+        </div>
+      </div>
+    </details>
+  `;
+}
+
+function renderScoringMethodology() {
+  const target = document.getElementById("scoringMethodology");
+  if (!target) return;
+  target.innerHTML = `
+    <article class="methodology-card">
+      <div>
+        <span class="kicker">Instrucciones de ponderación</span>
+        <strong>De dónde salen las métricas y cómo defender el scoring</strong>
+        <p>Las notas iniciales son una valoración cualitativa 1-5 basada en documentación oficial de fabricante, capacidades publicadas, evidencias públicas, riesgos/advisories, casos de uso típicos y criterio técnico de arquitectura. No sustituyen una PoC: sirven para orientar la RFP y priorizar qué validar.</p>
+      </div>
+      <div class="methodology-steps">
+        <div><span>1</span><p><strong>Base documental:</strong> documentación oficial, fichas de producto, certificaciones, casos públicos y advisories.</p></div>
+        <div><span>2</span><p><strong>Ajuste cliente:</strong> pesos, casos imprescindibles, sector, SOC, soberanía y aplicaciones críticas.</p></div>
+        <div><span>3</span><p><strong>Validación PoC/RFP:</strong> cada “i” indica qué probar y qué evidencia pedir al fabricante.</p></div>
+      </div>
+    </article>
+  `;
 }
 
 function applyProfilePreset(presetId) {
@@ -1229,20 +1273,27 @@ function createEvaluationPdf() {
     doc.kv("Evidencia ENS", vendor.ensUrl);
   });
 
-  doc.section("4. Criterios, pesos y notas base");
+  doc.section("4. Metodologia de ponderacion");
+  doc.paragraph("Las notas 1-5 son una valoracion cualitativa basada en documentacion oficial, capacidades publicadas, evidencias publicas, advisories, casos de uso y criterio tecnico. Deben validarse mediante PoC/RFP antes de una decision final.");
+  criteria.forEach(criterion => {
+    const guide = metricGuidance[criterion.id];
+    if (guide) doc.kv(criterion.label, `Base: ${guide.basis} Validar: ${guide.validation}`);
+  });
+
+  doc.section("5. Criterios, pesos y notas base");
   criteria.forEach(criterion => {
     const scores = vendors.map((vendor, index) => `${vendor.name}: ${criterion.scores[index]}`).join(" | ");
     doc.kv(criterion.label, `Peso ${state.weights[criterion.id]} | ${scores}`);
   });
 
-  doc.section("5. Casos de uso imprescindibles");
+  doc.section("6. Casos de uso imprescindibles");
   useCases.forEach(useCase => {
     const priority = state.required[useCase.label] ? "Imprescindible" : "Deseable";
     const fit = vendors.map((vendor, index) => `${vendor.name}: ${useCase.fit[index]}`).join(" | ");
     doc.kv(useCase.label, `${priority} | ${fit}`);
   });
 
-  doc.section("6. Matriz de riesgo y vulnerabilidades");
+  doc.section("7. Matriz de riesgo y vulnerabilidades");
   doc.barChart("CVEs/advisories relevantes por fabricante", cveItems.map(item => {
     const vendor = vendors.find(v => v.name === item.vendor);
     return { label: item.vendor, value: item.cves.length, color: vendor.color };
@@ -1262,7 +1313,7 @@ function createEvaluationPdf() {
     doc.kv(`${item.vendor} incidente medio`, `${item.date} | ${item.type} | ${item.impact} | ${item.url}`);
   });
 
-  doc.section("7. Funcionalidades por producto y marca");
+  doc.section("8. Funcionalidades por producto y marca");
   productCapabilities.forEach(item => {
     doc.subsection(`${item.vendor} - ${item.primary}`);
     doc.kv("Grado de implementación", `${item.maturity}/5 - ${item.implementationGrade}`);
@@ -1275,7 +1326,7 @@ function createEvaluationPdf() {
     doc.kv("Fuentes", item.sources.join(" | "));
   });
 
-  doc.section("8. Cifrado y especificaciones tecnicas");
+  doc.section("9. Cifrado y especificaciones tecnicas");
   techItems.forEach(item => {
     doc.subsection(item.vendor);
     doc.kv("Tunel usuario", item.tunnel);
@@ -1302,7 +1353,7 @@ function createEvaluationPdf() {
     doc.kv("Docs oficiales", item.officialDocs.map(doc => `${doc.label}: ${doc.url}`).join(" | "));
   });
 
-  doc.section("9. Implementacion, provision y on-premise");
+  doc.section("10. Implementacion, provision y on-premise");
   deploymentItems.forEach(item => {
     doc.subsection(item.vendor);
     doc.kv("Implementacion / provision", item.implementation);
@@ -1311,7 +1362,7 @@ function createEvaluationPdf() {
     doc.kv("Casos publicos", item.success.map(story => `${story.label}: ${story.url}`).join(" | "));
   });
 
-  doc.section("10. Valoracion quantum / PQC");
+  doc.section("11. Valoracion quantum / PQC");
   quantumAiItems.forEach(item => {
     doc.subsection(item.vendor);
     doc.kv("Quantum / PQC", `${item.quantumScore}/5 - ${item.quantum}`);
@@ -1319,7 +1370,7 @@ function createEvaluationPdf() {
     doc.kv("Fuentes", item.sources.join(" | "));
   });
 
-  doc.section("11. Valoracion IA");
+  doc.section("12. Valoracion IA");
   quantumAiItems.forEach(item => {
     doc.subsection(item.vendor);
     doc.kv("IA / Seguridad de IA", `${item.aiScore}/5 - ${item.ai}`);
@@ -1327,7 +1378,7 @@ function createEvaluationPdf() {
     doc.kv("Fuentes", item.sources.join(" | "));
   });
 
-  doc.section("12. Detection, Intelligence & Data Quality");
+  doc.section("13. Detection, Intelligence & Data Quality");
   doc.barChart("Scoring SOC/GRC avanzado", vendors.map((vendor, index) => ({ label: vendor.name, value: advancedScore(index), color: vendor.color })), 5);
   advancedMetrics.forEach(metric => {
     doc.kv(metric.label, `Peso ${metric.weight}% | ${vendors.map((vendor, index) => `${vendor.name}: ${metric.scores[index]}`).join(" | ")}`);
@@ -1354,7 +1405,7 @@ function createEvaluationPdf() {
     doc.kv(row.type, vendors.map((vendor, index) => `${vendor.name}: ${row.scores[index]}/5`).join(" | "));
   });
 
-  doc.section("13. Evidencia y confianza");
+  doc.section("14. Evidencia y confianza");
   evidenceItems.forEach(item => {
     doc.subsection(`${item.vendor} - confianza ${item.confidence}/5`);
     item.items.forEach(evidence => {
@@ -1362,7 +1413,7 @@ function createEvaluationPdf() {
     });
   });
 
-  doc.section("14. Notas de uso");
+  doc.section("15. Notas de uso");
   doc.paragraph("La puntuacion agregada no debe sustituir la validacion de requisitos imprescindibles. Si un caso imprescindible no queda cubierto, el proveedor debe quedar como no apto, apto con condiciones o apto solo con arquitectura complementaria.");
   doc.paragraph("La informacion de Gartner, casos publicos y fabricantes debe contrastarse con PoC, contrato, referencias privadas y matriz de versiones/advisories del entorno real.");
 
@@ -1425,6 +1476,12 @@ function createSectionPdf(sectionId) {
   }
 
   if (sectionId === "assessment") {
+    doc.section("Metodologia de ponderacion");
+    doc.paragraph("Las notas 1-5 son una valoracion cualitativa basada en documentacion oficial, capacidades publicadas, evidencias publicas, advisories, casos de uso y criterio tecnico. Deben validarse mediante PoC/RFP.");
+    criteria.forEach(criterion => {
+      const guide = metricGuidance[criterion.id];
+      if (guide) doc.kv(criterion.label, `Base: ${guide.basis} Validar: ${guide.validation}`);
+    });
     doc.section("Scoring y pesos");
     criteria.forEach(criterion => doc.kv(criterion.label, `Peso actual ${state.weights[criterion.id]} | ${vendors.map((vendor, index) => `${vendor.name}: ${criterion.scores[index]}`).join(" | ")}`));
   }
@@ -1742,6 +1799,7 @@ function refresh() {
 function init() {
   restoreState();
   document.getElementById("scenario").value = state.scenario || "balanced";
+  renderScoringMethodology();
   renderCriteria();
   renderProfile();
   renderUseCases();

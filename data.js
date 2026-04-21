@@ -112,6 +112,117 @@ criteria: [
   { id: "tco", label: "TCO (Coste Total de Propiedad)", weight: 4, scores: [3, 3, 2, 5, 4] }
 ],
 
+metricGuidance: {
+  threat: {
+    basis: "Capacidad declarada y evidenciada para bloquear malware, phishing, command and control, amenazas web/cloud y tráfico sospechoso.",
+    evidence: "Documentación oficial de SWG/FWaaS/threat prevention, advisories, capacidades sandbox/intel y resultados esperados en PoC.",
+    validation: "Probar políticas de bloqueo, falsos positivos, latencia de inspección, cobertura MITRE/TTPs y telemetría exportada al SOC.",
+    links: ["https://help.zscaler.com/", "https://docs.netskope.com/en/", "https://docs.paloaltonetworks.com/prisma-access/administration"]
+  },
+  dlp: {
+    basis: "Cobertura de DLP para web, SaaS, endpoint, correo/API cuando aplique, clasificación de datos y acciones de bloqueo/coaching.",
+    evidence: "Documentación oficial DLP/CASB, matrices de tipos de datos, capacidades OCR/EDM/IDM y casos de uso de fuga de información.",
+    validation: "Validar precisión, falsos positivos, diccionarios, datos sensibles reales, GenAI prompts, SaaS sancionado y no sancionado.",
+    links: ["https://www.netskope.com/products/dlp", "https://www.zscaler.com/products/data-loss-prevention", "https://www.paloaltonetworks.com/prisma/cloud/cloud-data-security"]
+  },
+  casb: {
+    basis: "Capacidades CASB inline y API para SaaS, visibilidad de shadow IT, control por actividad, postura y riesgo de aplicación.",
+    evidence: "Guías oficiales CASB/API, catálogos de apps, controles por actividad y documentación de integración con SaaS críticos.",
+    validation: "Probar Office 365/Google/Salesforce/ServiceNow u otras apps reales, acciones de cuarentena, revocación y reporting.",
+    links: ["https://docs.netskope.com/en/netskope-help/data-security/casb-api-protection/", "https://www.zscaler.com/products/cloud-access-security-broker", "https://docs.paloaltonetworks.com/saas-security"]
+  },
+  ztna: {
+    basis: "Acceso zero trust a aplicaciones privadas sin exponer red, con control por identidad, dispositivo, postura y contexto.",
+    evidence: "Documentación ZTNA/private access, arquitectura de conectores, integración IdP, opciones de acceso terceros y segmentación.",
+    validation: "Probar apps TCP/UDP/web reales, terceros, MFA, posture checks, acceso sin VPN, logging por aplicación y experiencia usuario.",
+    links: ["https://www.zscaler.com/products/zscaler-private-access", "https://www.netskope.com/products/private-access", "https://docs.paloaltonetworks.com/prisma-access/administration/prisma-access-ztna"]
+  },
+  swg: {
+    basis: "Secure Web Gateway: filtrado URL, inspección TLS, control de descargas/subidas, aislamiento y protección navegación.",
+    evidence: "Documentación SWG, TLS inspection, RBI, política web, categorías URL y métodos de forwarding.",
+    validation: "Medir latencia, bypass, categorías, descargas, inspección TLS, certificados, excepciones y convivencia con proxy/firewall actual.",
+    links: ["https://www.zscaler.com/products/zscaler-internet-access", "https://www.netskope.com/products/next-gen-swg", "https://docs.sse.cisco.com/sse-user-guide/docs/welcome-cisco-secure-access"]
+  },
+  sdwan: {
+    basis: "Madurez SD-WAN/SASE branch: conectividad de sedes, steering, HA, CPE/edge, políticas y operación integrada.",
+    evidence: "Documentación oficial SD-WAN/SASE branch, referencias de despliegue de sedes y compatibilidad con túneles/edge.",
+    validation: "Probar una sede piloto, rutas, failover, QoS, latencia, túneles, visibilidad y operación con red existente.",
+    links: ["https://www.fortinet.com/products/sd-wan", "https://www.cisco.com/site/us/en/solutions/secure-access-service-edge-sase/index.html", "https://www.paloaltonetworks.com/sase/prisma-sd-wan"]
+  },
+  performance: {
+    basis: "Rendimiento percibido y objetivo: red global, PoPs, latencia, throughput, inspección TLS y experiencia digital.",
+    evidence: "Documentación de backbone/cloud, DEM/monitorización de experiencia, SLAs publicados y resultados de PoC.",
+    validation: "Medir navegación, SaaS crítico, apps privadas, latencia por región, degradación con TLS inspection y experiencia en roaming.",
+    links: ["https://www.zscaler.com/products/zscaler-digital-experience", "https://www.netskope.com/netskope-one/newedge", "https://www.cisco.com/site/us/en/products/security/secure-access/index.html"]
+  },
+  ops: {
+    basis: "Simplicidad operativa: consola, políticas, troubleshooting, RBAC, reporting, cambios, curva de aprendizaje y soporte.",
+    evidence: "Guías de administración, APIs, documentación de operación, reporting y experiencia estimada de despliegue.",
+    validation: "Ejecutar tareas comunes: crear política, investigar evento, excluir app, generar informe, integrar SIEM y delegar roles.",
+    links: ["https://help.zscaler.com/", "https://docs.netskope.com/en/", "https://docs.fortinet.com/product/fortisase"]
+  },
+  apps: {
+    basis: "Convivencia con aplicaciones críticas: compatibilidad, exclusiones, protocolos, apps legacy, rendimiento y soporte a no-web.",
+    evidence: "Documentación de forwarding, ZTNA, túneles, excepciones, puertos/protocolos y guías de troubleshooting.",
+    validation: "Probar ERP, VDI, VoIP, apps legacy, SaaS crítico, certificados, autenticación y escenarios de contingencia.",
+    links: ["https://docs.paloaltonetworks.com/prisma-access/administration", "https://docs.sse.cisco.com/sse-user-guide/docs/welcome-cisco-secure-access", "https://docs.fortinet.com/product/fortisase"]
+  },
+  ecosystem: {
+    basis: "Integraciones con IdP, EDR/XDR, SIEM, SOAR, ITSM, MDM/UEM, APIs, logs y ecosistema de seguridad existente.",
+    evidence: "Documentación de APIs, conectores, marketplace, formatos de logs y compatibilidad con herramientas corporativas.",
+    validation: "Probar SAML/OIDC/SCIM, syslog/API, SIEM/XDR, ticketing, SOAR, enriquecimiento y normalización de campos.",
+    links: ["https://help.zscaler.com/zia/api", "https://docs.netskope.com/en/netskope-help/integrations-439558/", "https://docs.paloaltonetworks.com/prisma-access/administration/prisma-access-integration-apis"]
+  },
+  soc: {
+    basis: "Calidad de integración SOC: eventos útiles, contexto, normalización, APIs, MITRE/TTPs, XDR/XSIAM/SIEM y respuesta.",
+    evidence: "Guías de logging, APIs, integración SIEM/SOAR/XDR, documentación Cortex/Cisco/Fortinet/Zscaler/Netskope.",
+    validation: "Enviar logs reales al SIEM/XDR, medir campos, ruido, deduplicación, correlación, alertas accionables y trazabilidad.",
+    links: ["https://www.paloaltonetworks.com/cortex/cortex-xsiam", "https://docs.fortinet.com/product/fortisiem", "https://docs.netskope.com/en/netskope-help/integrations-439558/"]
+  },
+  implementation: {
+    basis: "Facilidad de implementación/provisión: agentes, conectores, túneles, IdP, migración, automatización y rollout por fases.",
+    evidence: "Guías oficiales de despliegue, prerequisitos, arquitecturas de referencia y casos públicos.",
+    validation: "Piloto con usuarios, sede, app privada, SaaS, exclusiones, rollback, empaquetado de agente y documentación operacional.",
+    links: ["https://help.zscaler.com/client-connector", "https://docs.netskope.com/en/netskope-help/netskope-client/", "https://docs.fortinet.com/product/fortisase"]
+  },
+  onprem: {
+    basis: "Capacidad de mantener componentes on-premise, soberanía operativa, edge local, integración con appliances y control de datos.",
+    evidence: "Documentación de conectores/edge/appliances, certificaciones, residencia de datos y modelos gestionados soberanos.",
+    validation: "Revisar qué queda realmente on-prem, dónde se inspecciona, residencia de logs, claves, soporte ENS y dependencia cloud.",
+    links: ["https://www.fortinet.com/products/sase", "https://www.cisco.com/site/us/en/solutions/secure-access-service-edge-sase/index.html", "https://www.paloaltonetworks.com/company/certifications.html"]
+  },
+  success: {
+    basis: "Madurez pública demostrable: casos de éxito, referencias públicas, despliegues enterprise, partners y adopción visible.",
+    evidence: "Casos públicos de fabricante, notas de prensa, documentación de clientes y referencias sectoriales verificables.",
+    validation: "Solicitar referencias privadas similares, métricas de adopción, tamaño de despliegue y lecciones aprendidas.",
+    links: ["https://www.zscaler.com/customers", "https://www.netskope.com/customers", "https://www.fortinet.com/customers"]
+  },
+  quantum: {
+    basis: "Preparación post-cuántica: visibilidad criptográfica, crypto-agility, soporte PQC/híbrido y roadmap público.",
+    evidence: "Documentación oficial de PQC, anuncios de producto, guías de TLS/criptografía y evidencias de implementación.",
+    validation: "Verificar inventario criptográfico, algoritmos permitidos, compatibilidad de clientes, roadmap contractual y reporting.",
+    links: ["https://www.zscaler.com/blogs/product-insights/preparing-post-quantum-cryptography", "https://www.fortinet.com/blog/business-and-technology/fortinet-quantum-safe-security", "https://www.cisco.com/c/en/us/solutions/quantum-safe.html"]
+  },
+  ai: {
+    basis: "Capacidades de IA y seguridad de IA: control GenAI, clasificación, copilots, analítica, prevención y protección de prompts/datos.",
+    evidence: "Documentación oficial de AI security, GenAI controls, SkopeAI, Cortex/XSIAM/AIRS, Cisco AI Defense u ofertas equivalentes.",
+    validation: "Probar uso de ChatGPT/Copilot/GenAI, fuga de datos en prompts, reporting, políticas por usuario y eficacia real.",
+    links: ["https://www.paloaltonetworks.com/prisma/cloud/ai-security", "https://www.netskope.com/products/ai-security", "https://www.zscaler.com/products/ai-security"]
+  },
+  risk: {
+    basis: "Riesgo de vulnerabilidades: historial CVE/advisories, criticidad, exposición, velocidad de parcheo y superficie administrativa.",
+    evidence: "Advisories oficiales, NVD/CVE, notas de fabricante, incidentes públicos y tiempo de respuesta documentado.",
+    validation: "Revisar versiones, hardening, MFA admin, exposición de consolas, SLA de parcheo, procesos de emergencia y compensating controls.",
+    links: ["https://nvd.nist.gov/", "https://www.cisa.gov/known-exploited-vulnerabilities-catalog", "https://www.fortiguard.com/psirt"]
+  },
+  tco: {
+    basis: "TCO significa Coste Total de Propiedad: licencias, despliegue, operación, soporte, tráfico, agentes, formación y servicios.",
+    evidence: "Modelo comercial, licencias, componentes requeridos, servicios profesionales, esfuerzo SOC/red y costes de transición.",
+    validation: "Comparar BOM real, crecimiento usuarios/sedes, módulos opcionales, soporte premium, operación interna y coste de salida.",
+    links: ["https://www.gartner.com/en/information-technology/glossary/total-cost-of-ownership-tco", "https://www.fortinet.com/products/sase", "https://www.cisco.com/site/us/en/solutions/secure-access-service-edge-sase/index.html"]
+  }
+},
+
 useCases: [
   { label: "ZTNA para apps privadas", fit: [5, 4, 4, 3, 3], required: false },
   { label: "Acceso terceros sin VPN", fit: [5, 4, 4, 3, 4], required: false },

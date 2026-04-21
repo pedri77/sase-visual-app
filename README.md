@@ -35,6 +35,7 @@ El boton superior descarga un PDF completo con portada, logo de la web y toda la
 - Persistencia local de pesos, perfil, escenario y casos imprescindibles.
 - Enlaces navegables por hash para abrir secciones concretas.
 - Control de evaluacion con progreso, anterior/siguiente, enlace copiable y PDF de seccion actual.
+- Instrucciones de ponderacion por metrica con base, evidencia, validacion PoC/RFP y enlaces de referencia.
 - Feedback visual mediante notificaciones locales.
 - PWA instalable con cache estatica para GitHub Pages.
 - Metadatos SEO, canonical, Open Graph y Twitter Card.

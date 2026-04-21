@@ -1,10 +1,10 @@
-const CACHE_NAME = "sase-decision-studio-ux-pages-20260421";
+const CACHE_NAME = "sase-decision-studio-metric-guidance-20260421";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=ux-pages-20260421",
-  "./data.js?v=ux-pages-20260421",
-  "./app.js?v=ux-pages-20260421",
+  "./styles.css?v=metric-guidance-20260421",
+  "./data.js?v=metric-guidance-20260421",
+  "./app.js?v=metric-guidance-20260421",
   "./manifest.webmanifest",
   "./icon.svg"
 ];
