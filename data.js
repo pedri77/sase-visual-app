@@ -418,6 +418,76 @@ threatHeatmap: [
   { type: "Data Exfiltration", scores: [4, 5, 4, 4, 3] }
 ],
 
+integrationProtocolItems: [
+  {
+    vendor: "Zscaler",
+    protocols: ["REST API", "Nanolog Streaming Service", "Syslog", "SAML 2.0", "SCIM", "Cloud NSS", "Webhooks vía integraciones"],
+    sources: ["ZIA/ZPA logs", "Zscaler Client Connector", "Cloud Sandbox", "DLP/CASB", "Audit/admin logs", "Threat intelligence ThreatLabz"],
+    tools: ["Splunk", "Microsoft Sentinel", "QRadar", "Cortex XSIAM", "ServiceNow", "Okta", "Microsoft Entra ID", "CrowdStrike/EDR vía integraciones"],
+    dataQuality: "Alta para web/proxy/ZTNA; validar normalización de campos NSS, latencia de streaming, campos DLP y correlación usuario-dispositivo.",
+    notes: "Muy integrable con SIEM/SOAR, pero conviene fijar formato, campos obligatorios, retención y API rate limits en RFP.",
+    docs: [
+      { label: "Zscaler APIs", url: "https://help.zscaler.com/zidentity/about-zscaler-apis" },
+      { label: "Nanolog Streaming Service", url: "https://help.zscaler.com/zia/about-nanolog-streaming-service" },
+      { label: "SAML/SCIM", url: "https://help.zscaler.com/zia/configuring-saml" }
+    ]
+  },
+  {
+    vendor: "Netskope",
+    protocols: ["REST API", "Cloud Log Shipper", "Syslog", "SAML 2.0", "SCIM", "IPSec/GRE telemetry", "Publisher logs"],
+    sources: ["Netskope Client", "NPA Publishers", "CASB API", "DLP events", "SkopeAI/analytics", "Cloud confidence/app discovery"],
+    tools: ["Splunk", "Microsoft Sentinel", "QRadar", "ServiceNow", "Okta", "Microsoft Entra ID", "CrowdStrike/EDR via ecosystem"],
+    dataQuality: "Muy fuerte en SaaS/DLP/data context; validar exportación de eventos DLP, taxonomía de apps y consistencia API vs syslog.",
+    notes: "Buen candidato si el SOC/GRC necesita contexto de datos; pedir en PoC ejemplos reales de eventos y esquema de campos.",
+    docs: [
+      { label: "Netskope API", url: "https://docs.netskope.com/en/rest-api-v2-overview/" },
+      { label: "Cloud Log Shipper", url: "https://docs.netskope.com/en/cloud-log-shipper/" },
+      { label: "SCIM integration", url: "https://docs.netskope.com/en/scim-integration/" }
+    ]
+  },
+  {
+    vendor: "Palo Alto Networks",
+    protocols: ["REST API", "Syslog Collector", "HTTP Collector", "Strata Logging Service", "XDR Collector", "SAML 2.0", "SCIM", "Broker/ingest integrations"],
+    sources: ["Prisma Access", "Prisma Access Browser", "NGFW/PAN-OS", "Cortex XDR", "Cortex XSIAM", "WildFire", "IoT Security", "External logs"],
+    tools: ["Cortex XSIAM", "Cortex XDR", "Cortex XSOAR", "Splunk", "Microsoft Sentinel", "QRadar", "ServiceNow", "Okta/Entra ID"],
+    dataQuality: "Muy alta si se usa Cortex/Strata como plano de datos; validar coste por TB, normalización XDM, retención y deduplicación.",
+    notes: "La integración más potente aparece cuando SASE y SOC se consolidan en Cortex XSIAM/XDR; exigir arquitectura de ingesta y licenciamiento.",
+    docs: [
+      { label: "XSIAM data sources", url: "https://docs-cortex.paloaltonetworks.com/r/Cortex-XSIAM/Cortex-XSIAM-NG-SIEM-Documentation/Data-Sources" },
+      { label: "Ingest data from Prisma Access", url: "https://docs-cortex.paloaltonetworks.com/r/Cortex-XSIAM/Cortex-XSIAM-Enterprise-Documentation/Ingest-data-from-Prisma-Access" },
+      { label: "External logs Prisma Access", url: "https://docs.paloaltonetworks.com/prisma-access/administration/monitor/external-logs-and-other-data" }
+    ]
+  },
+  {
+    vendor: "Fortinet",
+    protocols: ["Syslog", "FortiAnalyzer/FortiManager", "REST API", "SAML 2.0", "LDAP/RADIUS", "Fabric Connectors", "SNMP"],
+    sources: ["FortiSASE", "FortiGate", "FortiClient", "FortiAnalyzer", "FortiGuard", "ZTNA/FWaaS/SWG events", "SD-WAN telemetry"],
+    tools: ["FortiAnalyzer", "FortiSIEM", "Splunk", "Microsoft Sentinel", "QRadar", "ServiceNow", "Okta/Entra ID", "Fortinet Security Fabric"],
+    dataQuality: "Alta en entornos Fortinet/Fabric; validar formato entre FortiSASE, FortiGate y FortiAnalyzer para evitar duplicidades.",
+    notes: "Muy natural si ya existe Fortinet; pedir evidencia de logs FortiSASE específicos, APIs disponibles y mapeo a SIEM externo.",
+    docs: [
+      { label: "FortiSASE docs", url: "https://docs.fortinet.com/product/fortisase" },
+      { label: "FortiAnalyzer syslog/log forwarding", url: "https://docs.fortinet.com/product/fortianalyzer" },
+      { label: "Fortinet Developer Network", url: "https://fndn.fortinet.net/" }
+    ]
+  },
+  {
+    vendor: "Cisco",
+    protocols: ["Reporting API", "S3 log export", "Webhook Push Security Events", "Third-Party Integrations API", "SAML 2.0", "SCIM", "XDR API/integration"],
+    sources: ["Cisco Secure Access", "Secure Client", "DLP events", "Network tunnel logs", "DNS/SWG/FWaaS/CASB", "Cisco XDR", "Talos", "ThousandEyes"],
+    tools: ["Cisco XDR", "Splunk", "Microsoft Sentinel", "QRadar", "ServiceNow", "Okta", "Microsoft Entra ID", "Duo", "ISE"],
+    dataQuality: "Buena para reporting, S3 y XDR; validar frecuencia CSV gzip cada 10 min, límites de Reporting API y eventos push en tiempo real.",
+    notes: "Muy interesante por API reciente y webhooks; pedir en PoC export S3, llamadas Reporting API y eventos push a SOAR.",
+    docs: [
+      { label: "Reporting API", url: "https://developer.cisco.com/docs/cloud-security/secure-access-api-reference-reporting-overview/" },
+      { label: "Manage Logging", url: "https://docs.sse.cisco.com/sse-user-guide/docs/manage-your-logs" },
+      { label: "Push Security Events", url: "https://developer.cisco.com/docs/cloud-security/secure-access-api-reference-admin-push-security-events-overview" },
+      { label: "SAML IdP", url: "https://docs.sse.cisco.com/sse-user-guide/docs/configure-integrations-with-saml-identity-providers" },
+      { label: "SCIM IdP", url: "https://docs.sse.cisco.com/sse-user-guide/docs/add-idp-integration" }
+    ]
+  }
+],
+
 techItems: [
   {
     vendor: "Zscaler",

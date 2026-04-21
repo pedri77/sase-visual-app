@@ -936,6 +936,40 @@ input[type="range"] {
   margin: 0;
 }
 
+.integration-matrix {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+}
+
+.integration-matrix > strong {
+  font-size: 16px;
+}
+
+.integration-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.integration-grid div {
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+  border-radius: 7px;
+  background: #eef2f7;
+}
+
+.integration-grid span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
 .encryption-summary {
   grid-column: 1 / -1;
 }

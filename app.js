@@ -9,6 +9,7 @@ const {
   mediaIncidentItems = [],
   advancedMetrics,
   threatHeatmap,
+  integrationProtocolItems = [],
   techItems,
   encryptionLayerItems = [],
   encryptionSpecItems = [],
@@ -652,6 +653,7 @@ function renderFrameworkVendorDetails() {
     const rankedMetrics = advancedMetrics
       .map(metric => ({ ...metric, score: metric.scores[index], contribution: metric.scores[index] * metric.weight / 100 }))
       .sort((a, b) => b.score - a.score);
+    const integration = integrationProtocolItems.find(item => item.vendor === vendor.name);
 
     return `
       <article class="vendor-framework-panel" style="--vendor-accent:${vendor.color}">
@@ -703,6 +705,33 @@ function renderFrameworkVendorDetails() {
             </tbody>
           </table>
         </div>
+        ${integration ? `
+          <div class="integration-matrix">
+            <strong>Protocolos de integración, herramientas y fuentes</strong>
+            <div class="integration-grid">
+              <div>
+                <span>Protocolos / mecanismos</span>
+                <p>${integration.protocols.join(" · ")}</p>
+              </div>
+              <div>
+                <span>Fuentes de telemetría</span>
+                <p>${integration.sources.join(" · ")}</p>
+              </div>
+              <div>
+                <span>Herramientas destino</span>
+                <p>${integration.tools.join(" · ")}</p>
+              </div>
+              <div>
+                <span>Data Quality / operabilidad</span>
+                <p>${integration.dataQuality}</p>
+              </div>
+            </div>
+            <p><strong>Validar en PoC:</strong> ${integration.notes}</p>
+            <div class="vendor-links">
+              ${integration.docs.map(doc => `<a href="${doc.url}" target="_blank" rel="noreferrer">${doc.label}</a>`).join("")}
+            </div>
+          </div>
+        ` : ""}
       </article>
     `;
   }).join("");
@@ -977,6 +1006,14 @@ function createEvaluationPdf() {
     threatHeatmap.forEach(row => {
       doc.kv(row.type, `${row.scores[index]}/5`);
     });
+    const integration = integrationProtocolItems.find(item => item.vendor === vendor.name);
+    if (integration) {
+      doc.kv("Protocolos integración", integration.protocols.join(", "));
+      doc.kv("Fuentes telemetría", integration.sources.join(", "));
+      doc.kv("Herramientas destino", integration.tools.join(", "));
+      doc.kv("Data Quality integración", integration.dataQuality);
+      doc.kv("Docs integración", integration.docs.map(source => `${source.label}: ${source.url}`).join(" | "));
+    }
   });
   threatHeatmap.forEach(row => {
     doc.kv(row.type, vendors.map((vendor, index) => `${vendor.name}: ${row.scores[index]}/5`).join(" | "));
