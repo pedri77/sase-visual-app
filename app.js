@@ -1,4 +1,19 @@
-const { vendors, criteria, useCases, productCapabilities, riskItems, cveItems, advancedMetrics, threatHeatmap, techItems, deploymentItems, quantumAiItems, scenarios, evidenceItems, profilePresets } = window.SASE_DATA;
+const {
+  vendors,
+  criteria,
+  useCases,
+  productCapabilities = [],
+  riskItems,
+  cveItems,
+  advancedMetrics,
+  threatHeatmap,
+  techItems,
+  deploymentItems,
+  quantumAiItems,
+  scenarios,
+  evidenceItems,
+  profilePresets
+} = window.SASE_DATA;
 
 const state = {
   weights: Object.fromEntries(criteria.map(c => [c.id, c.weight])),
@@ -362,6 +377,16 @@ function renderInnovation() {
 }
 
 function renderCapabilities() {
+  if (!productCapabilities.length) {
+    document.getElementById("capabilitiesGrid").innerHTML = `
+      <article class="capability-item">
+        <strong>Catálogo de funcionalidades no disponible</strong>
+        <p>Recarga la página para obtener la última versión publicada de los datos.</p>
+      </article>
+    `;
+    return;
+  }
+
   document.getElementById("capabilitiesGrid").innerHTML = productCapabilities.map(item => {
     const vendor = vendors.find(v => v.name === item.vendor);
     if (!vendor) return "";
