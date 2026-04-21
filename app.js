@@ -61,10 +61,10 @@ const vendors = [
     color: "#b45309",
     logo: "https://www.fortinet.com/favicon.ico",
     docsUrl: "https://docs.fortinet.com/product/fortisase",
-    productUrl: "https://www.fortinet.com/products/fortisase",
+    productUrl: "https://www.fortinet.com/products/sase",
     ens: "Vía servicio gestionado",
     ensDetail: "Telefónica Tech publica ENS Alta para su servicio gestionado flexWAN by Fortinet; no equivale automáticamente a FortiSASE directo.",
-    ensUrl: "https://telefonicatech.com/en/news/managed-flexwan-ens-high",
+    ensUrl: "https://www.telefonica.es/es/wp-content/uploads/sites/10/2021/11/esquema-nacional-seguridad-2019-0011-TDE.pdf",
     strength: 4.1,
     fit: 4.0,
     risk: 4,
@@ -164,6 +164,82 @@ const riskItems = [
   }
 ];
 
+const cveItems = [
+  {
+    vendor: "Zscaler",
+    cves: [
+      { id: "CVE-2026-22569", severity: "Media", product: "Client Connector Windows" },
+      { id: "CVE-2025-54983", severity: "Media", product: "Client Connector Windows" }
+    ],
+    source: "NVD / Zscaler advisories",
+    note: "Historial público menor que fabricantes con appliances expuestos; foco en agente y forwarding."
+  },
+  {
+    vendor: "Netskope",
+    cves: [
+      { id: "CVE-2026-2809", severity: "Media", product: "Endpoint DLP" },
+      { id: "CVE-2025-0309", severity: "Media", product: "Netskope Client" },
+      { id: "CVE-2025-5942", severity: "Media", product: "Netskope Client / Endpoint DLP" }
+    ],
+    source: "Netskope Security Advisories",
+    note: "Riesgo concentrado en cliente/endpoint; validar versión mínima y cadencia de actualización."
+  },
+  {
+    vendor: "Palo Alto Networks",
+    cves: [
+      { id: "CVE-2026-0227", severity: "Alta", product: "PAN-OS / Prisma Access GlobalProtect" },
+      { id: "CVE-2025-0108", severity: "Alta", product: "PAN-OS management" },
+      { id: "CVE-2024-3400", severity: "Crítica", product: "PAN-OS GlobalProtect" },
+      { id: "CVE-2024-0012", severity: "Crítica", product: "PAN-OS management" },
+      { id: "CVE-2024-9474", severity: "Alta", product: "PAN-OS management" }
+    ],
+    source: "Palo Alto Networks Security Advisories",
+    note: "Validar exposición de management/GlobalProtect, fixed releases y separación Prisma Access vs appliances."
+  },
+  {
+    vendor: "Fortinet",
+    cves: [
+      { id: "CVE-2025-59718", severity: "Alta", product: "FortiCloud SSO" },
+      { id: "CVE-2025-59719", severity: "Crítica", product: "FortiCloud SSO" },
+      { id: "CVE-2024-55591", severity: "Crítica", product: "FortiOS / FortiProxy" },
+      { id: "CVE-2023-27997", severity: "Crítica", product: "FortiOS / FortiProxy SSL-VPN" },
+      { id: "CVE-2022-40684", severity: "Crítica", product: "FortiOS / FortiProxy / FortiSwitchManager" }
+    ],
+    source: "Fortinet PSIRT / NVD",
+    note: "Mayor presión de patch governance si hay FortiGate/FortiManager/FortiSASE en arquitectura."
+  },
+  {
+    vendor: "Cisco",
+    cves: [
+      { id: "CVE-2026-20122", severity: "Alta", product: "Catalyst SD-WAN Manager" },
+      { id: "CVE-2026-20126", severity: "Alta", product: "Catalyst SD-WAN Manager" },
+      { id: "CVE-2026-20128", severity: "Alta", product: "Catalyst SD-WAN Manager" },
+      { id: "CVE-2026-20129", severity: "Crítica", product: "Catalyst SD-WAN Manager" },
+      { id: "CVE-2026-20133", severity: "Alta", product: "Catalyst SD-WAN Manager" }
+    ],
+    source: "Cisco Security Advisory cisco-sa-sdwan-authbp-qwCX8D4v",
+    note: "Riesgo ligado a SD-WAN Manager/vManage; exigir fixed release y hardening de administración."
+  }
+];
+
+const advancedMetrics = [
+  { id: "functional", label: "Functional Fit", weight: 25, scores: [4.3, 4.5, 4.6, 4.2, 4.2] },
+  { id: "detection", label: "Detection Effectiveness", weight: 20, scores: [4.6, 4.4, 4.7, 4.2, 4.4] },
+  { id: "telemetry", label: "Telemetry & Sources", weight: 15, scores: [4.2, 4.5, 4.7, 4.2, 4.5] },
+  { id: "intel", label: "Intelligence Value", weight: 15, scores: [4.5, 4.3, 4.8, 4.2, 4.6] },
+  { id: "data", label: "Data Quality", weight: 10, scores: [4.1, 4.6, 4.4, 4.0, 4.2] },
+  { id: "operability", label: "Operability", weight: 10, scores: [4.0, 4.2, 4.1, 4.2, 4.1] },
+  { id: "market", label: "Market Confidence", weight: 5, scores: [4.5, 4.4, 4.6, 4.3, 4.4] }
+];
+
+const threatHeatmap = [
+  { type: "Phishing", scores: [5, 4, 5, 4, 4] },
+  { type: "Malware", scores: [5, 4, 5, 4, 4] },
+  { type: "SaaS Abuse", scores: [4, 5, 4, 3, 4] },
+  { type: "Insider Risk", scores: [4, 5, 4, 4, 3] },
+  { type: "Data Exfiltration", scores: [4, 5, 4, 4, 3] }
+];
+
 const techItems = [
   {
     vendor: "Zscaler",
@@ -208,8 +284,8 @@ const deploymentItems = [
     implementation: "Provisión cloud con Zscaler Client Connector, PAC/tunnel/forwarding, conectores ZPA y GRE/IPSec para sedes.",
     onprem: "No como SASE on-prem completo. Usa conectores/forwarders y componentes virtuales, pero el plano SASE principal es cloud.",
     success: [
-      { label: "CSC", url: "https://www.zscaler.com/customers/csc" },
-      { label: "Protegrity", url: "https://www.zscaler.com/customers/protegrity" }
+      { label: "Customer Stories Zscaler", url: "https://www.zscaler.com/customers" },
+      { label: "CSC / Protegrity en customer stories", url: "https://www.zscaler.com/customers" }
     ],
     poc: "Validar ZCC, bypass, apps privadas no web, PoP elegido y operación de conectores."
   },
@@ -250,7 +326,7 @@ const deploymentItems = [
     onprem: "Híbrido fuerte por componentes Cisco on-prem/edge, aunque Secure Access/SASE sigue siendo cloud-delivered.",
     success: [
       { label: "Cisco SASE deployment case", url: "https://www.cisco.com/c/en/us/solutions/collateral/executive-perspectives/sase-cx-deployment.html" },
-      { label: "Qdoba", url: "https://umbrella.cisco.com/info/qdoba-case-study-cisco-secure-sase-solutions" },
+      { label: "Cisco SASE customer stories", url: "https://www.cisco.com/site/us/en/solutions/secure-access-service-edge-sase/index.html" },
       { label: "Cisco SASE customer stories", url: "https://www.cisco.com/site/us/en/solutions/secure-access-service-edge-sase/index.html" }
     ],
     poc: "Validar consola, convergencia real, Secure Client, SD-WAN, ISE/SGT, ThousandEyes y excepciones SaaS."
@@ -402,7 +478,7 @@ function renderVendors() {
         <span class="badge">${vendor.gartner}</span>
         <span class="badge ens-badge">${vendor.ens}</span>
       </div>
-      <p>${vendor.bestFor}</p>
+      <div class="advantage-box"><strong>Ventajas</strong>${vendor.bestFor}</div>
       ${vendor.platform ? `
         <div class="platform-list">
           <span>Nuevos productos / efecto plataforma</span>
@@ -412,7 +488,7 @@ function renderVendors() {
         </div>
       ` : ""}
       <p><strong>ENS:</strong> ${vendor.ensDetail}</p>
-      <p><strong>Cautela:</strong> ${vendor.caution}</p>
+      <div class="disadvantage-box"><strong>Desventajas / cautelas</strong>${vendor.caution}</div>
       <div class="vendor-links">
         <a href="${vendor.docsUrl}" target="_blank" rel="noreferrer">Documentación oficial</a>
         <a href="${vendor.productUrl}" target="_blank" rel="noreferrer">Página producto</a>
@@ -421,6 +497,59 @@ function renderVendors() {
       </div>
     </article>
   `).join("");
+}
+
+function renderRiskVisual() {
+  const maxCves = Math.max(...cveItems.map(item => item.cves.length));
+  document.getElementById("riskVisual").innerHTML = `
+    <svg viewBox="0 0 900 310" role="img" aria-label="Grafo visual de riesgo y volumen de CVEs">
+      <rect x="0" y="0" width="900" height="310" fill="#fbfcfe"/>
+      <text x="24" y="34" fill="#17212f" font-size="18" font-weight="850">Riesgo operativo vs CVEs recientes</text>
+      <text x="24" y="56" fill="#647084" font-size="12">Tamaño = volumen de CVEs/advisories relevantes. Color = riesgo operativo estimado.</text>
+      ${cveItems.map((item, index) => {
+        const vendor = vendors.find(v => v.name === item.vendor);
+        const x = 92 + index * 178;
+        const risk = vendor.risk;
+        const y = 240 - risk * 38;
+        const radius = 18 + (item.cves.length / maxCves) * 22;
+        const critical = item.cves.filter(cve => cve.severity === "Crítica").length;
+        return `
+          <line x1="${x}" y1="245" x2="${x}" y2="82" stroke="#e2e8f0" stroke-width="1"/>
+          <circle cx="${x}" cy="${y}" r="${radius}" fill="${vendor.color}" opacity="0.90"/>
+          <text x="${x}" y="${y + 5}" text-anchor="middle" fill="white" font-size="14" font-weight="900">${item.cves.length}</text>
+          <text x="${x}" y="272" text-anchor="middle" fill="#17212f" font-size="12" font-weight="850">${item.vendor}</text>
+          <text x="${x}" y="288" text-anchor="middle" fill="#647084" font-size="11">Críticas: ${critical}</text>
+        `;
+      }).join("")}
+      <text x="24" y="250" fill="#647084" font-size="11">Bajo</text>
+      <text x="24" y="92" fill="#647084" font-size="11">Alto</text>
+    </svg>
+  `;
+}
+
+function renderCveTable() {
+  document.getElementById("cveTable").innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Fabricante</th>
+          <th>CVEs/advisories últimos 5 años</th>
+          <th>Fuente</th>
+          <th>Lectura de riesgo</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${cveItems.map(item => `
+          <tr>
+            <td><strong>${item.vendor}</strong></td>
+            <td>${item.cves.map(cve => `<span class="cve-badge ${cve.severity.toLowerCase()}">${cve.id}</span><br><small>${cve.product} · ${cve.severity}</small>`).join("<br>")}</td>
+            <td>${item.source}</td>
+            <td>${item.note}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
 }
 
 function renderCriteria() {
@@ -470,6 +599,8 @@ function renderUseCases() {
 }
 
 function renderRisks() {
+  renderRiskVisual();
+  renderCveTable();
   document.getElementById("riskGrid").innerHTML = riskItems.map(item => `
     <article class="risk-item">
       <div class="risk-head">
@@ -552,6 +683,69 @@ function renderInnovation() {
   }).join("");
 }
 
+function advancedScore(vendorIndex) {
+  const total = advancedMetrics.reduce((sum, metric) => sum + metric.weight, 0);
+  return advancedMetrics.reduce((sum, metric) => sum + metric.scores[vendorIndex] * metric.weight, 0) / total;
+}
+
+function renderFramework() {
+  const advancedRanking = vendors
+    .map((vendor, index) => ({ vendor, score: advancedScore(index) }))
+    .sort((a, b) => b.score - a.score);
+  const radarPoints = advancedMetrics.map((metric, index) => {
+    const angle = (-90 + index * (360 / advancedMetrics.length)) * Math.PI / 180;
+    const radius = 28 + (metric.scores[2] / 5) * 82;
+    return `${160 + Math.cos(angle) * radius},${130 + Math.sin(angle) * radius}`;
+  }).join(" ");
+
+  document.getElementById("frameworkGrid").innerHTML = `
+    <article class="framework-item">
+      <strong>Modelo global</strong>
+      <p>Functional Fit 25%, Detection Effectiveness 20%, Telemetry 15%, Intelligence 15%, Data Quality 10%, Operability 10%, Market Confidence 5%.</p>
+      <div class="fit-chips">
+        ${advancedRanking.map(item => `<span class="fit-chip high">${item.vendor.name}: ${item.score.toFixed(2)}</span>`).join("")}
+      </div>
+    </article>
+    <article class="framework-item">
+      <strong>Radar de referencia</strong>
+      <svg viewBox="0 0 320 260" role="img" aria-label="Radar de capacidades avanzadas">
+        <rect x="0" y="0" width="320" height="260" fill="#fbfcfe"/>
+        <circle cx="160" cy="130" r="110" fill="none" stroke="#e2e8f0"/>
+        <circle cx="160" cy="130" r="72" fill="none" stroke="#e2e8f0"/>
+        <circle cx="160" cy="130" r="36" fill="none" stroke="#e2e8f0"/>
+        <polygon points="${radarPoints}" fill="rgba(109,40,217,0.18)" stroke="#6d28d9" stroke-width="3"/>
+        ${advancedMetrics.map((metric, index) => {
+          const angle = (-90 + index * (360 / advancedMetrics.length)) * Math.PI / 180;
+          return `<text x="${160 + Math.cos(angle) * 124}" y="${132 + Math.sin(angle) * 124}" text-anchor="middle" fill="#647084" font-size="10">${metric.label.split(" ")[0]}</text>`;
+        }).join("")}
+      </svg>
+    </article>
+    <article class="framework-item">
+      <strong>Fórmula ejecutiva</strong>
+      <p>Total Score = 0.25 Functional Fit + 0.20 Detection + 0.15 Telemetry + 0.15 Intelligence + 0.10 Data Quality + 0.10 Operability + 0.05 Market Confidence.</p>
+    </article>
+  `;
+
+  document.getElementById("heatmapPanel").innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Tipo de amenaza</th>
+          ${vendors.map(vendor => `<th>${vendor.name}</th>`).join("")}
+        </tr>
+      </thead>
+      <tbody>
+        ${threatHeatmap.map(row => `
+          <tr>
+            <td><strong>${row.type}</strong></td>
+            ${row.scores.map(score => `<td><span class="fit-chip ${score >= 4 ? "high" : "low"}">${score}/5</span></td>`).join("")}
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
 function applyScenario(name) {
   const selected = scenarios[name] || {};
   criteria.forEach(criterion => {
@@ -562,12 +756,20 @@ function applyScenario(name) {
 }
 
 function wireNavigation() {
+  const showView = (viewId, targetId) => {
+    document.querySelectorAll(".rail-item").forEach(item => item.classList.remove("active"));
+    document.querySelectorAll(".view").forEach(view => view.classList.remove("active"));
+    const activeRail = document.querySelector(`.rail-item[data-view="${viewId}"]`);
+    if (activeRail) activeRail.classList.add("active");
+    document.getElementById(viewId).classList.add("active");
+    if (targetId) {
+      window.setTimeout(() => document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+    }
+  };
+
   document.querySelectorAll("[data-view]").forEach(button => {
     button.addEventListener("click", () => {
-      document.querySelectorAll("[data-view]").forEach(item => item.classList.remove("active"));
-      document.querySelectorAll(".view").forEach(view => view.classList.remove("active"));
-      button.classList.add("active");
-      document.getElementById(button.dataset.view).classList.add("active");
+      showView(button.dataset.view, button.dataset.target);
     });
   });
 
@@ -616,6 +818,7 @@ function createEvaluationPdf() {
   doc.kv("Casos marcados como imprescindibles", requiredUseCases.length ? requiredUseCases.join("; ") : "Ninguno seleccionado");
 
   doc.section("2. Ranking ponderado");
+  doc.barChart("Ranking visual", ranked.map(item => ({ label: item.name, value: item.score, color: item.color })), 5);
   ranked.forEach((item, index) => {
     doc.kv(`#${index + 1} ${item.name}`, `Score ${item.score.toFixed(2)} / 5`);
     doc.paragraph(item.gates.length ? `Apto condicionado por: ${item.gates.join(", ")}` : "Sin bloqueos imprescindibles con la seleccion actual.");
@@ -648,10 +851,17 @@ function createEvaluationPdf() {
   });
 
   doc.section("6. Matriz de riesgo y vulnerabilidades");
+  doc.barChart("CVEs/advisories relevantes por fabricante", cveItems.map(item => {
+    const vendor = vendors.find(v => v.name === item.vendor);
+    return { label: item.vendor, value: item.cves.length, color: vendor.color };
+  }), Math.max(...cveItems.map(item => item.cves.length)));
   riskItems.forEach(item => {
     doc.subsection(`${item.vendor} - Riesgo ${item.level}`);
     item.items.forEach(risk => doc.bullet(risk));
     doc.kv("Accion", item.action);
+  });
+  cveItems.forEach(item => {
+    doc.kv(`${item.vendor} CVEs`, item.cves.map(cve => `${cve.id} (${cve.severity}, ${cve.product})`).join("; "));
   });
 
   doc.section("7. Cifrado y especificaciones tecnicas");
@@ -681,7 +891,16 @@ function createEvaluationPdf() {
     doc.kv("Fuentes", item.sources.join(" | "));
   });
 
-  doc.section("10. Notas de uso");
+  doc.section("10. Detection, Intelligence & Data Quality");
+  doc.barChart("Scoring SOC/GRC avanzado", vendors.map((vendor, index) => ({ label: vendor.name, value: advancedScore(index), color: vendor.color })), 5);
+  advancedMetrics.forEach(metric => {
+    doc.kv(metric.label, `Peso ${metric.weight}% | ${vendors.map((vendor, index) => `${vendor.name}: ${metric.scores[index]}`).join(" | ")}`);
+  });
+  threatHeatmap.forEach(row => {
+    doc.kv(row.type, vendors.map((vendor, index) => `${vendor.name}: ${row.scores[index]}/5`).join(" | "));
+  });
+
+  doc.section("11. Notas de uso");
   doc.paragraph("La puntuacion agregada no debe sustituir los gates de descarte. Si un caso imprescindible no queda cubierto, el proveedor debe quedar como no apto, apto condicionado o apto solo con arquitectura complementaria.");
   doc.paragraph("La informacion de Gartner, casos publicos y fabricantes debe contrastarse con PoC, contrato, referencias privadas y matriz de versiones/advisories del entorno real.");
 
@@ -840,6 +1059,24 @@ function createPdfWriter() {
       addWrapped(value, margin + 148, contentWidth - 148, 10, false, "#17212f", 14);
       y = Math.max(y, labelEnd) + 4;
     },
+    barChart(title, rows, maxValue) {
+      const rowHeight = 24;
+      const chartHeight = 46 + rows.length * rowHeight;
+      ensure(chartHeight + 10);
+      rect(margin, y, contentWidth, chartHeight, "#fbfcfe");
+      text(title, margin + 12, y + 18, 11, true, "#17212f");
+      y += 34;
+      rows.forEach(row => {
+        const labelWidth = 128;
+        const barWidth = Math.max(4, ((row.value / maxValue) * (contentWidth - labelWidth - 58)));
+        text(row.label, margin + 12, y + 12, 9, true, "#17212f");
+        rect(margin + labelWidth, y + 2, contentWidth - labelWidth - 48, 12, "#eef2f7");
+        rect(margin + labelWidth, y + 2, barWidth, 12, row.color || "#0f766e");
+        text(String(Number(row.value).toFixed(2)).replace(".00", ""), pageWidth - margin - 36, y + 12, 9, true, "#647084");
+        y += rowHeight;
+      });
+      y += 12;
+    },
     toBlob() {
       footer();
       pages.push(commands.join("\n"));
@@ -885,6 +1122,7 @@ function init() {
   renderTechnical();
   renderDeployment();
   renderInnovation();
+  renderFramework();
   renderVendors();
   wireNavigation();
   refresh();

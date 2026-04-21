@@ -15,12 +15,12 @@
       </div>
       <h1>Evaluación visual de Zscaler, Netskope, Palo Alto, Fortinet y Cisco</h1>
       <div class="hero-metrics" aria-label="Alcance de la evaluación">
-        <span>SASE/SSE</span>
-        <span>ENS</span>
-        <span>Cifrado</span>
-        <span>XSIAM/XDR</span>
-        <span>On-premise</span>
-        <span>Quantum/IA</span>
+        <button class="hero-chip" data-view="dashboard" data-target="rankingBars" type="button">SASE/SSE</button>
+        <button class="hero-chip" data-view="dashboard" data-target="vendorStrip" type="button">ENS</button>
+        <button class="hero-chip" data-view="technical" type="button">Cifrado</button>
+        <button class="hero-chip" data-view="innovation" type="button">XSIAM/XDR</button>
+        <button class="hero-chip" data-view="deployment" type="button">On-premise</button>
+        <button class="hero-chip" data-view="innovation" type="button">Quantum/IA</button>
       </div>
     </div>
     <div class="topbar-actions">
@@ -46,6 +46,10 @@
       <button class="rail-item" data-view="usecases" type="button">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>
         <span>Casos</span>
+      </button>
+      <button class="rail-item" data-view="framework" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5m0 14h16M8 15l3-4 3 2 4-6"/></svg>
+        <span>Detección</span>
       </button>
       <button class="rail-item" data-view="risks" type="button">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 20h18L12 3Zm0 6v5m0 3h.01"/></svg>
@@ -74,6 +78,7 @@
               <strong id="winnerName">-</strong>
             </div>
             <p id="winnerReason">Ajusta los pesos y los casos imprescindibles para obtener una recomendación.</p>
+            <button class="inline-link" data-view="assessment" type="button">Ajustar pesos</button>
             <div class="scenario-control">
               <label for="scenario">Escenario</label>
               <select id="scenario">
@@ -152,7 +157,20 @@
             <h2>Matriz de riesgo y vulnerabilidades</h2>
             <span>Actualizado a 2026-04-21</span>
           </div>
+          <div class="risk-visual" id="riskVisual"></div>
+          <div class="cve-table" id="cveTable"></div>
           <div class="risk-grid" id="riskGrid"></div>
+        </section>
+      </section>
+
+      <section class="view" id="framework">
+        <section class="visual-panel">
+          <div class="panel-title">
+            <h2>Detection, Intelligence & Data Quality</h2>
+            <span>SOC/GRC scoring avanzado</span>
+          </div>
+          <div class="framework-grid" id="frameworkGrid"></div>
+          <div class="heatmap-panel" id="heatmapPanel"></div>
         </section>
       </section>
 
