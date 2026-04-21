@@ -519,6 +519,79 @@ encryptionLayerItems: [
   }
 ],
 
+encryptionSpecItems: [
+  {
+    vendor: "Zscaler",
+    userTunnel: "Z-Tunnel 2.0 sobre DTLS/TLS por 443; DTLS usa UDP/443 y TLS usa TCP/443.",
+    siteTunnel: "GRE o IPSec; para IPSec Zscaler recomienda IKEv2 y AES-GCM frente a NULL/AES-CBC.",
+    algorithms: "IPSec: NULL, AES-CBC y AES-GCM soportados; preferencia recomendada: IKEv2 + AES-GCM.",
+    tlsInspection: "ZIA inspecciona TLS/SSL mediante CA raíz corporativa/Zscaler y certificados de corta vida emitidos por la plataforma.",
+    keyModel: "PSK para IPSec; CA corporativa/Zscaler para inspección TLS; exigir gestión de CA, rotación y exclusiones.",
+    pqc: "Zscaler publica capacidades de visibilidad/inspección de tráfico con cifrado post-cuántico en su oferta quantum security.",
+    officialDocs: [
+      { label: "Z-Tunnel 2.0 DTLS/TLS", url: "https://zscaler.az-ap.com/article/72/tunnel-20-dtls-and-tls-mode" },
+      { label: "IPSec guidance", url: "https://www.zscaler.com/blogs/product-insights/new-ipsec-traffic-forwarding-guidance-zscaler-customers" },
+      { label: "TLS/SSL inspection", url: "https://help.zscaler.com/downloads/zia/reference-architecture/tlsssl-inspection-zscaler-internet-access/TLS-SSL-Inspection-with-Zscaler-Internet-Access.pdf" }
+    ]
+  },
+  {
+    vendor: "Netskope",
+    userTunnel: "Netskope Client y acceso a NewEdge con TLS; documentación comercial destaca inspección TLS 1.3 nativa.",
+    siteTunnel: "GRE/IPSec hacia NewEdge según diseño de forwarding.",
+    algorithms: "La documentación pública consultada no lista suites completas por tenant; exigir matriz de cifrados TLS/IPSec en RFP.",
+    tlsInspection: "SSL/TLS inspection cloud-native con soporte TLS 1.3 nativo para usuarios, ubicaciones y dispositivos.",
+    keyModel: "Certificados de cliente/tenant y CA de inspección Netskope/custom; revisar rotación de CA y BYOK si aplica.",
+    pqc: "Roadmap/planificación post-cuántica publicada; exigir disponibilidad contractual si es requisito.",
+    officialDocs: [
+      { label: "SSL/TLS Inspection", url: "https://www.netskope.com/netskope-one/ssl-tls-inspection" },
+      { label: "Netskope Client docs", url: "https://docs.netskope.com/en/netskope-client/" },
+      { label: "IPSec and GRE", url: "https://docs.netskope.com/en/ipsec-and-gre/" }
+    ]
+  },
+  {
+    vendor: "Palo Alto Networks",
+    userTunnel: "Prisma Access Agent/GlobalProtect con TLS/IPSec según despliegue; SSL decryption soporta TLS 1.3 en Prisma Access.",
+    siteTunnel: "Remote Networks con IPSec/IKE configurable.",
+    algorithms: "IPSec ESP: aes-256-gcm, aes-256-cbc, aes-192-cbc, aes-128-gcm, aes-128-cbc, 3des, des o null; autenticación sha1/256/384/512/md5; DH grupos 1,2,5,14,19,20 y PFS/no-PFS.",
+    tlsInspection: "TLS 1.3 decryption para SSL Forward Proxy, Inbound Inspection, Network Packet Broker y port mirroring.",
+    keyModel: "Perfiles IKE/IPSec, certificados de decryption y Strata Logging Service; exigir DH 19/20, PFS y deshabilitar DES/3DES/MD5 si política lo permite.",
+    pqc: "Documentación específica de decryption post-cuántica para NGFW/Prisma Access.",
+    officialDocs: [
+      { label: "Prisma Access IPSec", url: "https://docs.paloaltonetworks.com/prisma-access/administration/prisma-access-remote-networks/connect-a-remote-network-site-to-prisma-access" },
+      { label: "TLS 1.3 Decryption", url: "https://docs.paloaltonetworks.com/network-security/decryption/administration/decryption-overview/tls-1-3-ssl-decryption" },
+      { label: "PQC decryption", url: "https://docs.paloaltonetworks.com/network-security/decryption/administration/post-quantum-cryptography-decryption" }
+    ]
+  },
+  {
+    vendor: "Fortinet",
+    userTunnel: "FortiClient/FortiSASE con IKEv2/IPSec para SIA en perfiles soportados.",
+    siteTunnel: "FortiSASE security PoPs con IKEv2, mode config, DPD, NAT traversal y PFS.",
+    algorithms: "Phase 1 FortiSASE: AES128/SHA256, AES256/SHA256, AES128-GCM/PRFSHA256, AES256-GCM/PRFSHA384, ChaCha20-Poly1305/PRFSHA2. Phase 2: AES128/AES256 con SHA1/SHA256, AES-GCM o ChaCha20-Poly1305.",
+    tlsInspection: "Deep inspection con CA FortiSASE/FortiGate; revisar excepciones y compatibilidad de endpoints.",
+    keyModel: "IKEv2, DH 5/15 en perfiles FortiSASE, key life 86400s Phase 1 y 43200s Phase 2 según doc.",
+    pqc: "Fortinet publica línea quantum-safe/PQC para FortiOS/FortiSASE; exigir versión y alcance exacto.",
+    officialDocs: [
+      { label: "FortiSASE tunnel settings", url: "https://docs.fortinet.com/document/fortisase/26.1.26/feature-administration-guide/357569/tunnel-settings" },
+      { label: "FortiOS encryption algorithms", url: "https://docs.fortinet.com/document/fortigate/7.6.2/administration-guide/238852/encryption-algorithms" },
+      { label: "FortiSASE", url: "https://www.fortinet.com/products/sase" }
+    ]
+  },
+  {
+    vendor: "Cisco",
+    userTunnel: "Cisco Secure Client/Secure Access con TLS para acceso web/ZTNA y túneles cifrados según modo.",
+    siteTunnel: "Network tunnels IPsec IKEv2 hacia Cisco Secure Access; 1 Gbps por túnel según documentación.",
+    algorithms: "Ejemplos ASA/IOS XE: IKEv2 aes-gcm-256, PRF SHA256, DH group 19/20; IPsec ESP aes-gcm-256. Integración SD-Routing permite suites AES 256 CBC SHA1/SHA2, AES 128 CBC SHA1/SHA2 y AES 256 GCM para IPsec.",
+    tlsInspection: "Full/selective TLS decryption en Secure Access/FWaaS/SWG; exigir guía de CA, exclusiones y pinning.",
+    keyModel: "Passphrase/PSK de túnel, IKE ID, VTI, UDP 500/4500, BGP/ECMP si se usan múltiples túneles.",
+    pqc: "Cisco Trust Center publica estrategia PQC; validar aplicabilidad concreta a Secure Access/SD-WAN.",
+    officialDocs: [
+      { label: "Secure Access network tunnels", url: "https://docs.sse.cisco.com/sse-user-guide/docs/secure-access-network-tunnels" },
+      { label: "ASA tunnel guide", url: "https://docs.sse.cisco.com/sse-dns-guide/docs/configure-tunnels-cisco-asa" },
+      { label: "Cisco Secure Access SD-Routing PDF", url: "https://www.cisco.com/c/en/us/td/docs/routers/sd-routing/b-security-configuration-sd-routing/m-cisco-secure-access-integration.pdf" }
+    ]
+  }
+],
+
 deploymentItems: [
   {
     vendor: "Zscaler",

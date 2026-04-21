@@ -11,6 +11,7 @@ const {
   threatHeatmap,
   techItems,
   encryptionLayerItems = [],
+  encryptionSpecItems = [],
   deploymentItems,
   quantumAiItems,
   scenarios,
@@ -409,8 +410,44 @@ function renderTechnical() {
     `;
   }).join("");
 
+  const specMatrix = `
+    <article class="framework-item encryption-summary">
+      <strong>Especificaciones técnicas verificables</strong>
+      <p>Esta tabla está pensada para RFP/PoC: identifica el protocolo, algoritmos documentados, modelo de claves/certificados y el enlace oficial donde contrastarlo.</p>
+      <div class="spec-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Fabricante</th>
+              <th>Túnel usuario</th>
+              <th>Sede / edge</th>
+              <th>Algoritmos y suites</th>
+              <th>TLS inspection</th>
+              <th>Claves / CA</th>
+              <th>Docs oficiales</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${encryptionSpecItems.map(item => `
+              <tr>
+                <td><strong>${item.vendor}</strong></td>
+                <td>${item.userTunnel}</td>
+                <td>${item.siteTunnel}</td>
+                <td>${item.algorithms}<br><small>PQC: ${item.pqc}</small></td>
+                <td>${item.tlsInspection}</td>
+                <td>${item.keyModel}</td>
+                <td>${item.officialDocs.map(doc => `<a href="${doc.url}" target="_blank" rel="noreferrer">${doc.label}</a>`).join("<br>")}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    </article>
+  `;
+
   document.getElementById("techGrid").innerHTML = `
     ${cards}
+    ${specMatrix}
     <article class="framework-item encryption-summary">
       <strong>Lectura ejecutiva de cifrado por capas</strong>
       <p>El punto crítico no es solo si el túnel cifra, sino dónde se termina TLS, quién custodia las CA, cómo se inspecciona, qué algoritmos se permiten y qué evidencias quedan para SOC/GRC.</p>
@@ -780,6 +817,16 @@ function createEvaluationPdf() {
       doc.kv(layer.layer, `Cifrado: ${layer.encryption} | Modo: ${layer.mode} | PoC: ${layer.poc}`);
     });
     doc.kv("Fuentes", item.sources.join(" | "));
+  });
+  encryptionSpecItems.forEach(item => {
+    doc.subsection(`${item.vendor} - especificaciones técnicas`);
+    doc.kv("Túnel usuario", item.userTunnel);
+    doc.kv("Sede / edge", item.siteTunnel);
+    doc.kv("Algoritmos", item.algorithms);
+    doc.kv("TLS inspection", item.tlsInspection);
+    doc.kv("Claves / CA", item.keyModel);
+    doc.kv("PQC", item.pqc);
+    doc.kv("Docs oficiales", item.officialDocs.map(doc => `${doc.label}: ${doc.url}`).join(" | "));
   });
 
   doc.section("9. Implementacion, provision y on-premise");
