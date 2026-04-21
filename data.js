@@ -132,6 +132,74 @@ useCases: [
   { label: "Coexistencia red actual", fit: [3, 4, 5, 5, 5], required: false }
 ],
 
+productCapabilities: [
+  {
+    vendor: "Zscaler",
+    primary: "Zscaler Zero Trust Exchange",
+    implementationGrade: "Alto en SSE/ZTNA cloud-first; medio si el alcance exige SD-WAN nativo o edge físico.",
+    maturity: 4.5,
+    core: ["ZIA / SWG", "ZPA / ZTNA", "CASB", "Cloud DLP", "Zero Trust Firewall", "Browser Isolation", "Digital Experience", "AI Security", "PQC/Quantum Visibility"],
+    adjacent: ["Zscaler Client Connector", "Zscaler Digital Experience", "Zscaler Deception", "Workload Communications", "Data Security Posture Management"],
+    peerOverlap: ["Netskope One SSE", "Prisma Access", "Cisco Secure Access", "FortiSASE"],
+    implementation: ["Cliente ZCC", "PAC / GRE / IPSec", "Conectores ZPA", "Integración IdP/SIEM/SOAR", "Políticas por usuario, app, riesgo y postura"],
+    differentiators: ["Proxy cloud zero trust muy maduro", "Inspección TLS a escala", "ZTNA sin exponer aplicaciones", "Fuerte encaje para usuarios remotos y SaaS"],
+    caution: "Requiere validar SD-WAN, aplicaciones no web, bypasses, PoPs, experiencia de agente y convivencia con firewalls/SD-WAN existentes.",
+    sources: ["https://www.zscaler.com/products/zero-trust-exchange", "https://www.zscaler.com/products/zscaler-internet-access", "https://www.zscaler.com/products/zscaler-private-access"]
+  },
+  {
+    vendor: "Netskope",
+    primary: "Netskope One",
+    implementationGrade: "Alto en data security, CASB/SSE y cloud; creciente en SD-WAN/SASE Branch.",
+    maturity: 4.4,
+    core: ["Netskope One SSE", "CASB", "Next Gen SWG", "Private Access / ZTNA", "Cloud Firewall", "Unified DLP", "AI Security", "Endpoint SD-WAN", "SASE Branch"],
+    adjacent: ["Netskope One Client", "NewEdge Network", "Zero Trust Engine", "SkopeAI", "Advanced Analytics", "IoT Device Intelligence", "Enterprise Browser"],
+    peerOverlap: ["Zscaler ZIA/ZPA", "Prisma Access", "Cisco Secure Access", "FortiSASE"],
+    implementation: ["Netskope Client", "NPA Publishers", "GRE/IPSec", "Explicit proxy", "API CASB", "Endpoint DLP", "Orchestrator para sedes"],
+    differentiators: ["Muy fuerte en datos, SaaS y CASB", "Contexto granular de aplicaciones", "Buen modelo de DLP y clasificación", "Plataforma convergente con foco AI/data"],
+    caution: "Validar disponibilidad real de SD-WAN/branch por país, madurez operacional del endpoint DLP y dependencia de diseño NewEdge/Publishers.",
+    sources: ["https://www.netskope.com/products", "https://www.netskope.com/netskope-one", "https://www.netskope.com/products/casb", "https://www.netskope.com/products/sd-wan"]
+  },
+  {
+    vendor: "Palo Alto Networks",
+    primary: "Prisma SASE / Prisma Access",
+    implementationGrade: "Muy alto en plataforma enterprise; exige mayor gobierno, arquitectura y operación para capturar todo el valor.",
+    maturity: 4.6,
+    core: ["Prisma Access", "ZTNA", "SWG", "CASB", "FWaaS", "Prisma SD-WAN", "Prisma Access Browser", "ADEM", "AI Access Security", "Prisma AIRS"],
+    adjacent: ["Cortex XSIAM", "Cortex XDR", "Cortex XSOAR", "Cortex Xpanse", "Strata Cloud Manager", "NGFW / PAN-OS", "Advanced WildFire"],
+    peerOverlap: ["Zscaler Zero Trust Exchange", "Netskope One", "Cisco Secure Access", "FortiSASE"],
+    implementation: ["Prisma Access Agent", "Remote Networks", "Service Connections", "Panorama/Strata", "Logging Service", "Integración Cortex XSIAM/SIEM"],
+    differentiators: ["Mejor encaje si ya existe PAN-OS/Cortex", "Profundidad de prevención e inteligencia", "XSIAM/XDR diferencial para SOC", "Browser y AIRS para IA/terceros"],
+    caution: "Coste, licenciamiento, complejidad de diseño, gobierno de políticas y separación entre capacidades cloud y appliances on-prem deben validarse en PoC.",
+    sources: ["https://www.paloaltonetworks.com/sase/access", "https://www.paloaltonetworks.com/sase/prisma-access-browser", "https://www.paloaltonetworks.com/cortex/cortex-xsiam"]
+  },
+  {
+    vendor: "Fortinet",
+    primary: "FortiSASE / Fortinet Unified SASE",
+    implementationGrade: "Alto en sedes, SD-WAN y entornos Fortinet; medio-alto en SSE puro frente a especialistas cloud.",
+    maturity: 4.2,
+    core: ["FortiSASE", "Secure SD-WAN", "SWG", "ZTNA", "CASB", "FWaaS", "RBI", "SSPM", "DEM", "FortiSASE Sovereign"],
+    adjacent: ["FortiGate", "FortiManager", "FortiAnalyzer", "FortiClient", "FortiGuard Labs", "FortiAI-Assist", "FortiOS"],
+    peerOverlap: ["Cisco Secure Access + SD-WAN", "Prisma SASE", "Netskope One SASE", "Zscaler SSE con SD-WAN tercero"],
+    implementation: ["FortiClient", "FortiGate Secure Edge", "Thin Edge", "Branch On-Ramp", "FortiManager", "FortiSASE cloud o sovereign"],
+    differentiators: ["Convergencia real de red y seguridad", "Fuerte SD-WAN y edge", "Modelo TCO competitivo", "Opción soberana/on-premise más clara"],
+    caution: "Exigir patch governance, hardening de gestión, diseño de roles y validación de que FortiSASE cubre los casos cloud/SaaS con la misma profundidad requerida.",
+    sources: ["https://www.fortinet.com/products/sase", "https://www.fortinet.com/products/sd-wan"]
+  },
+  {
+    vendor: "Cisco",
+    primary: "Cisco Secure Access",
+    implementationGrade: "Alto en ecosistema Cisco, identidad, red y observabilidad; medio si se busca una consola SSE completamente independiente de legado.",
+    maturity: 4.1,
+    core: ["Cisco Secure Access", "ZTNA", "SWG", "CASB", "FWaaS", "DNS Security", "DLP", "RBI", "VPNaaS", "AI Access", "Hybrid Private Access"],
+    adjacent: ["Cisco Secure Client", "Umbrella", "Duo", "ISE", "Catalyst SD-WAN", "ThousandEyes", "Cisco XDR", "Talos"],
+    peerOverlap: ["Fortinet Unified SASE", "Prisma SASE", "Zscaler ZIA/ZPA", "Netskope One"],
+    implementation: ["Secure Client", "Clientless ZTNA", "Resource Connectors", "SAML IdP", "SD-WAN/IPsec", "ThousandEyes Experience Insights", "XDR integration"],
+    differentiators: ["Muy fuerte si ya existe Cisco", "DNS/SWG y Secure Client asentados", "Duo/ISE/SD-WAN/ThousandEyes aportan ecosistema", "AI Access y Hybrid Private Access recientes"],
+    caution: "Validar convergencia real entre Secure Access, Umbrella, SD-WAN, Duo, ISE y XDR; revisar paquetes/licencias y operación multi-consola.",
+    sources: ["https://www.cisco.com/site/us/en/products/security/secure-access/index.html", "https://www.cisco.com/c/en/us/products/collateral/security/secure-access/secure-access-ds.html", "https://www.cisco.com/c/en/us/solutions/collateral/security-service-edge-sse/security-service-edge-sse-package-og.html"]
+  }
+],
+
 riskItems: [
   {
     vendor: "Zscaler",

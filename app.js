@@ -1,4 +1,4 @@
-const { vendors, criteria, useCases, riskItems, cveItems, advancedMetrics, threatHeatmap, techItems, deploymentItems, quantumAiItems, scenarios, evidenceItems, profilePresets } = window.SASE_DATA;
+const { vendors, criteria, useCases, productCapabilities, riskItems, cveItems, advancedMetrics, threatHeatmap, techItems, deploymentItems, quantumAiItems, scenarios, evidenceItems, profilePresets } = window.SASE_DATA;
 
 const state = {
   weights: Object.fromEntries(criteria.map(c => [c.id, c.weight])),
@@ -361,6 +361,57 @@ function renderInnovation() {
   }).join("");
 }
 
+function renderCapabilities() {
+  document.getElementById("capabilitiesGrid").innerHTML = productCapabilities.map(item => {
+    const vendor = vendors.find(v => v.name === item.vendor);
+    if (!vendor) return "";
+    return `
+      <article class="capability-item" style="--vendor-accent:${vendor.color}">
+        <div class="vendor-card-head">
+          <img src="${vendor.logo}" alt="Logo ${item.vendor}" loading="lazy">
+          <div>
+            <strong>${item.vendor}</strong>
+            <p>${item.primary}</p>
+          </div>
+        </div>
+        <div class="capability-score">
+          <span>Grado de implementación</span>
+          <strong>${item.maturity.toFixed(1)}/5</strong>
+          <div class="bar-track"><div class="bar-fill" style="width:${(item.maturity / 5) * 100}%;background:${vendor.color}"></div></div>
+          <p>${item.implementationGrade}</p>
+        </div>
+        <div class="capability-block">
+          <span>Funcionalidades principales</span>
+          <div class="fit-chips">${item.core.map(value => `<span class="fit-chip high">${value}</span>`).join("")}</div>
+        </div>
+        <div class="capability-block">
+          <span>Otras soluciones de la marca</span>
+          <div class="fit-chips">${item.adjacent.map(value => `<span class="fit-chip">${value}</span>`).join("")}</div>
+        </div>
+        <div class="capability-block">
+          <span>Soluciones equivalentes en otros fabricantes</span>
+          <p>${item.peerOverlap.join(" · ")}</p>
+        </div>
+        <div class="capability-block">
+          <span>Modelo de implantación</span>
+          <ul>${item.implementation.map(value => `<li>${value}</li>`).join("")}</ul>
+        </div>
+        <div class="advantage-box">
+          <strong>Diferenciadores</strong>
+          <p>${item.differentiators.join(" · ")}</p>
+        </div>
+        <div class="disadvantage-box">
+          <strong>Precaución</strong>
+          <p>${item.caution}</p>
+        </div>
+        <div class="vendor-links">
+          ${item.sources.map((source, index) => `<a href="${source}" target="_blank" rel="noreferrer">Fuente ${index + 1}</a>`).join("")}
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
 function renderEvidence() {
   document.getElementById("evidenceGrid").innerHTML = evidenceItems.map(item => {
     const vendor = vendors.find(v => v.name === item.vendor);
@@ -572,7 +623,20 @@ function createEvaluationPdf() {
     doc.kv(`${item.vendor} CVEs`, item.cves.map(cve => `${cve.id} (${cve.severity}, ${cve.product})`).join("; "));
   });
 
-  doc.section("7. Cifrado y especificaciones tecnicas");
+  doc.section("7. Funcionalidades por producto y marca");
+  productCapabilities.forEach(item => {
+    doc.subsection(`${item.vendor} - ${item.primary}`);
+    doc.kv("Grado de implementación", `${item.maturity}/5 - ${item.implementationGrade}`);
+    doc.kv("Funcionalidades", item.core.join(", "));
+    doc.kv("Otras soluciones", item.adjacent.join(", "));
+    doc.kv("Soluciones equivalentes", item.peerOverlap.join(" | "));
+    doc.kv("Modelo implantación", item.implementation.join(", "));
+    doc.kv("Diferenciadores", item.differentiators.join(" | "));
+    doc.kv("Precaución", item.caution);
+    doc.kv("Fuentes", item.sources.join(" | "));
+  });
+
+  doc.section("8. Cifrado y especificaciones tecnicas");
   techItems.forEach(item => {
     doc.subsection(item.vendor);
     doc.kv("Tunel usuario", item.tunnel);
@@ -581,7 +645,7 @@ function createEvaluationPdf() {
     doc.kv("Validar en PoC", item.validate);
   });
 
-  doc.section("8. Implementacion, provision y on-premise");
+  doc.section("9. Implementacion, provision y on-premise");
   deploymentItems.forEach(item => {
     doc.subsection(item.vendor);
     doc.kv("Implementacion / provision", item.implementation);
@@ -590,7 +654,7 @@ function createEvaluationPdf() {
     doc.kv("Casos publicos", item.success.map(story => `${story.label}: ${story.url}`).join(" | "));
   });
 
-  doc.section("9. Valoracion quantum e IA");
+  doc.section("10. Valoracion quantum e IA");
   quantumAiItems.forEach(item => {
     doc.subsection(item.vendor);
     doc.kv("Quantum / PQC", `${item.quantumScore}/5 - ${item.quantum}`);
@@ -599,7 +663,7 @@ function createEvaluationPdf() {
     doc.kv("Fuentes", item.sources.join(" | "));
   });
 
-  doc.section("10. Detection, Intelligence & Data Quality");
+  doc.section("11. Detection, Intelligence & Data Quality");
   doc.barChart("Scoring SOC/GRC avanzado", vendors.map((vendor, index) => ({ label: vendor.name, value: advancedScore(index), color: vendor.color })), 5);
   advancedMetrics.forEach(metric => {
     doc.kv(metric.label, `Peso ${metric.weight}% | ${vendors.map((vendor, index) => `${vendor.name}: ${metric.scores[index]}`).join(" | ")}`);
@@ -608,7 +672,7 @@ function createEvaluationPdf() {
     doc.kv(row.type, vendors.map((vendor, index) => `${vendor.name}: ${row.scores[index]}/5`).join(" | "));
   });
 
-  doc.section("11. Evidencia y confianza");
+  doc.section("12. Evidencia y confianza");
   evidenceItems.forEach(item => {
     doc.subsection(`${item.vendor} - confianza ${item.confidence}/5`);
     item.items.forEach(evidence => {
@@ -616,7 +680,7 @@ function createEvaluationPdf() {
     });
   });
 
-  doc.section("12. Notas de uso");
+  doc.section("13. Notas de uso");
   doc.paragraph("La puntuacion agregada no debe sustituir los gates de descarte. Si un caso imprescindible no queda cubierto, el proveedor debe quedar como no apto, apto condicionado o apto solo con arquitectura complementaria.");
   doc.paragraph("La informacion de Gartner, casos publicos y fabricantes debe contrastarse con PoC, contrato, referencias privadas y matriz de versiones/advisories del entorno real.");
 
@@ -839,6 +903,7 @@ function init() {
   renderTechnical();
   renderDeployment();
   renderInnovation();
+  renderCapabilities();
   renderFramework();
   renderEvidence();
   renderVendors();
