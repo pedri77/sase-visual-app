@@ -69,7 +69,7 @@ const vendors = [
     fit: 4.0,
     risk: 4,
     gartner: "SASE Leader · SSE Challenger",
-    bestFor: "Sedes, SD-WAN, FortiGate y TCO.",
+    bestFor: "Sedes, SD-WAN, FortiGate y TCO (Coste Total de Propiedad).",
     caution: "Exigir disciplina de parcheo y hardening admin."
   },
   {
@@ -106,7 +106,7 @@ const criteria = [
   { id: "onprem", label: "On-premise / soberanía", weight: 3, scores: [2, 2, 3, 5, 4] },
   { id: "success", label: "Casos de éxito públicos", weight: 3, scores: [5, 5, 4, 5, 5] },
   { id: "risk", label: "Riesgo de vulnerabilidades", weight: 4, scores: [4, 4, 3, 2, 3] },
-  { id: "tco", label: "TCO", weight: 4, scores: [3, 3, 2, 5, 4] }
+  { id: "tco", label: "TCO (Coste Total de Propiedad)", weight: 4, scores: [3, 3, 2, 5, 4] }
 ];
 
 const useCases = [
