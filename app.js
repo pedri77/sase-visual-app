@@ -292,8 +292,9 @@ function scoreVendors() {
 function renderRanking() {
   const ranked = scoreVendors();
   const max = Math.max(...ranked.map(item => item.score));
-  document.getElementById("rankingBars").innerHTML = ranked.map(item => `
+  document.getElementById("rankingBars").innerHTML = ranked.map((item, index) => `
     <div class="ranking-row">
+      <div class="rank-pill">#${index + 1}</div>
       <div class="vendor-name with-logo"><img src="${item.logo}" alt="Logo ${item.name}" loading="lazy">${item.name}</div>
       <div class="bar-track" aria-hidden="true">
         <div class="bar-fill" style="width:${(item.score / max) * 100}%;background:${item.color}"></div>
@@ -340,7 +341,7 @@ function renderQuadrant() {
 
 function renderVendors() {
   document.getElementById("vendorStrip").innerHTML = vendors.map(vendor => `
-    <article class="vendor-tile">
+    <article class="vendor-tile" style="--vendor-accent:${vendor.color}">
       <div class="vendor-card-head">
         <img src="${vendor.logo}" alt="Logo ${vendor.name}" loading="lazy">
         <strong>${vendor.name}</strong>
@@ -435,7 +436,7 @@ function renderTechnical() {
   document.getElementById("techGrid").innerHTML = techItems.map(item => {
     const vendor = vendors.find(v => v.name === item.vendor);
     return `
-      <article class="tech-item">
+      <article class="tech-item" style="--vendor-accent:${vendor.color}">
         <div class="vendor-card-head">
           <img src="${vendor.logo}" alt="Logo ${item.vendor}" loading="lazy">
           <strong>${item.vendor}</strong>
@@ -455,7 +456,7 @@ function renderDeployment() {
   document.getElementById("deploymentGrid").innerHTML = deploymentItems.map(item => {
     const vendor = vendors.find(v => v.name === item.vendor);
     return `
-      <article class="deployment-item">
+      <article class="deployment-item" style="--vendor-accent:${vendor.color}">
         <div class="vendor-card-head">
           <img src="${vendor.logo}" alt="Logo ${item.vendor}" loading="lazy">
           <strong>${item.vendor}</strong>
