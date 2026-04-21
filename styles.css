@@ -62,6 +62,43 @@ select:focus-visible {
   gap: 16px;
 }
 
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-mark {
+  width: 36px;
+  height: 36px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: 8px;
+  background: rgba(15, 118, 110, 0.86);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+}
+
+.brand-mark span {
+  width: 18px;
+  height: 18px;
+  border: 2px solid white;
+  border-left-color: transparent;
+  border-radius: 50%;
+  position: relative;
+}
+
+.brand-mark span::after {
+  content: "";
+  position: absolute;
+  width: 13px;
+  height: 2px;
+  top: 7px;
+  left: 1px;
+  background: white;
+  transform: rotate(-28deg);
+}
+
 .eyebrow,
 .kicker {
   margin: 0 0 8px;

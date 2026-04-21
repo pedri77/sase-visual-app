@@ -502,22 +502,288 @@ function wireNavigation() {
     renderUseCases();
     refresh();
   });
-  document.getElementById("exportJson").addEventListener("click", exportJson);
+  document.getElementById("exportPdf").addEventListener("click", exportPdf);
 }
 
-function exportJson() {
-  const payload = {
-    date: new Date().toISOString(),
-    weights: state.weights,
-    requiredUseCases: Object.entries(state.required).filter(([, required]) => required).map(([label]) => label),
-    ranking: scoreVendors()
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+function exportPdf() {
+  const pdf = createEvaluationPdf();
   const anchor = document.createElement("a");
-  anchor.href = URL.createObjectURL(blob);
-  anchor.download = "sase-evaluation-result.json";
+  anchor.href = URL.createObjectURL(pdf);
+  anchor.download = "sase-decision-studio-evaluacion.pdf";
   anchor.click();
   URL.revokeObjectURL(anchor.href);
+}
+
+function createEvaluationPdf() {
+  const doc = createPdfWriter();
+  const ranked = scoreVendors();
+  const selectedScenario = document.getElementById("scenario");
+  const scenarioName = selectedScenario.options[selectedScenario.selectedIndex].text;
+  const winner = ranked.find(item => item.gates.length === 0) || ranked[0];
+  const requiredUseCases = Object.entries(state.required)
+    .filter(([, required]) => required)
+    .map(([label]) => label);
+
+  doc.cover("SASE Decision Studio", "Evaluacion visual de proveedores SASE/SSE", [
+    `Fecha: ${new Date().toLocaleDateString("es-ES")}`,
+    `Escenario: ${scenarioName}`,
+    "Proveedores: Zscaler, Netskope, Palo Alto Networks, Fortinet y Cisco"
+  ]);
+
+  doc.section("1. Resumen ejecutivo");
+  doc.kv("Recomendacion preliminar", winner.name);
+  doc.paragraph(winner.bestFor);
+  doc.kv("Bloqueos detectados", String(ranked.reduce((sum, item) => sum + item.gates.length, 0)));
+  doc.kv("Riesgo medio", (vendors.reduce((sum, v) => sum + v.risk, 0) / vendors.length).toFixed(1));
+  doc.kv("Casos marcados como imprescindibles", requiredUseCases.length ? requiredUseCases.join("; ") : "Ninguno seleccionado");
+
+  doc.section("2. Ranking ponderado");
+  ranked.forEach((item, index) => {
+    doc.kv(`#${index + 1} ${item.name}`, `Score ${item.score.toFixed(2)} / 5`);
+    doc.paragraph(item.gates.length ? `Apto condicionado por: ${item.gates.join(", ")}` : "Sin bloqueos imprescindibles con la seleccion actual.");
+  });
+
+  doc.section("3. Lectura ejecutiva por fabricante");
+  vendors.forEach(vendor => {
+    doc.subsection(vendor.name);
+    doc.kv("Gartner / mercado", vendor.gartner);
+    doc.kv("ENS", `${vendor.ens}. ${vendor.ensDetail}`);
+    doc.kv("Encaje", vendor.bestFor);
+    doc.kv("Cautela", vendor.caution);
+    if (vendor.platform) doc.kv("Plataforma", vendor.platform.join(", "));
+    doc.kv("Documentacion", vendor.docsUrl);
+    doc.kv("Producto", vendor.productUrl);
+    doc.kv("Evidencia ENS", vendor.ensUrl);
+  });
+
+  doc.section("4. Criterios, pesos y notas base");
+  criteria.forEach(criterion => {
+    const scores = vendors.map((vendor, index) => `${vendor.name}: ${criterion.scores[index]}`).join(" | ");
+    doc.kv(criterion.label, `Peso ${state.weights[criterion.id]} | ${scores}`);
+  });
+
+  doc.section("5. Casos de uso imprescindibles");
+  useCases.forEach(useCase => {
+    const priority = state.required[useCase.label] ? "Imprescindible" : "Deseable";
+    const fit = vendors.map((vendor, index) => `${vendor.name}: ${useCase.fit[index]}`).join(" | ");
+    doc.kv(useCase.label, `${priority} | ${fit}`);
+  });
+
+  doc.section("6. Matriz de riesgo y vulnerabilidades");
+  riskItems.forEach(item => {
+    doc.subsection(`${item.vendor} - Riesgo ${item.level}`);
+    item.items.forEach(risk => doc.bullet(risk));
+    doc.kv("Accion", item.action);
+  });
+
+  doc.section("7. Cifrado y especificaciones tecnicas");
+  techItems.forEach(item => {
+    doc.subsection(item.vendor);
+    doc.kv("Tunel usuario", item.tunnel);
+    doc.kv("Sedes / forwarding", item.site);
+    doc.kv("TLS inspection", item.tls);
+    doc.kv("Validar en PoC", item.validate);
+  });
+
+  doc.section("8. Implementacion, provision y on-premise");
+  deploymentItems.forEach(item => {
+    doc.subsection(item.vendor);
+    doc.kv("Implementacion / provision", item.implementation);
+    doc.kv("Solucion on-premise", item.onprem);
+    doc.kv("Validar en PoC", item.poc);
+    doc.kv("Casos publicos", item.success.map(story => `${story.label}: ${story.url}`).join(" | "));
+  });
+
+  doc.section("9. Notas de uso");
+  doc.paragraph("La puntuacion agregada no debe sustituir los gates de descarte. Si un caso imprescindible no queda cubierto, el proveedor debe quedar como no apto, apto condicionado o apto solo con arquitectura complementaria.");
+  doc.paragraph("La informacion de Gartner, casos publicos y fabricantes debe contrastarse con PoC, contrato, referencias privadas y matriz de versiones/advisories del entorno real.");
+
+  return doc.toBlob();
+}
+
+function createPdfWriter() {
+  const pageWidth = 595.28;
+  const pageHeight = 841.89;
+  const margin = 46;
+  const contentWidth = pageWidth - margin * 2;
+  const pages = [];
+  let commands = [];
+  let y = margin;
+  let pageNumber = 0;
+
+  const rgb = hex => {
+    const value = hex.replace("#", "");
+    return [
+      parseInt(value.slice(0, 2), 16) / 255,
+      parseInt(value.slice(2, 4), 16) / 255,
+      parseInt(value.slice(4, 6), 16) / 255
+    ].map(number => number.toFixed(3)).join(" ");
+  };
+
+  const clean = value => String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[·•]/g, "-")
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .replace(/[–—]/g, "-")
+    .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, "");
+
+  const literal = value => `(${clean(value).replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)")})`;
+  const pdfY = value => pageHeight - value;
+  const textWidth = (value, size) => clean(value).length * size * 0.48;
+  const wrap = (value, size, width) => {
+    const words = clean(value).split(/\s+/).filter(Boolean);
+    const lines = [];
+    let line = "";
+    const maxChars = Math.max(12, Math.floor(width / (size * 0.48)));
+    words.forEach(word => {
+      if (textWidth(word, size) > width) {
+        if (line) {
+          lines.push(line);
+          line = "";
+        }
+        for (let index = 0; index < word.length; index += maxChars) {
+          lines.push(word.slice(index, index + maxChars));
+        }
+        return;
+      }
+      const candidate = line ? `${line} ${word}` : word;
+      if (textWidth(candidate, size) <= width || !line) {
+        line = candidate;
+      } else {
+        lines.push(line);
+        line = word;
+      }
+    });
+    if (line) lines.push(line);
+    return lines.length ? lines : [""];
+  };
+
+  const color = hex => commands.push(`${rgb(hex)} rg`);
+  const rect = (x, top, width, height, fill = "#ffffff") => {
+    color(fill);
+    commands.push(`${x.toFixed(2)} ${(pageHeight - top - height).toFixed(2)} ${width.toFixed(2)} ${height.toFixed(2)} re f`);
+  };
+  const line = (x1, y1, x2, y2, stroke = "#d8dee8", width = 1) => {
+    commands.push(`${rgb(stroke)} RG ${width} w ${x1.toFixed(2)} ${pdfY(y1).toFixed(2)} m ${x2.toFixed(2)} ${pdfY(y2).toFixed(2)} l S`);
+  };
+  const text = (value, x, top, size = 10, bold = false, fill = "#17212f") => {
+    color(fill);
+    commands.push(`BT /${bold ? "F2" : "F1"} ${size} Tf ${x.toFixed(2)} ${pdfY(top).toFixed(2)} Td ${literal(value)} Tj ET`);
+  };
+  const footer = () => {
+    line(margin, pageHeight - 36, pageWidth - margin, pageHeight - 36, "#d8dee8", 0.6);
+    text("SASE Decision Studio", margin, pageHeight - 24, 8, true, "#647084");
+    text(`Pagina ${pageNumber}`, pageWidth - margin - 42, pageHeight - 24, 8, false, "#647084");
+  };
+  const header = () => {
+    rect(margin, 30, 24, 24, "#0f766e");
+    rect(margin + 8, 38, 14, 3, "#ffffff");
+    rect(margin + 8, 47, 14, 3, "#ffffff");
+    text("SASE Decision Studio", margin + 34, 47, 11, true, "#17212f");
+    line(margin, 66, pageWidth - margin, 66, "#d8dee8", 0.8);
+    y = 86;
+  };
+  const newPage = (withHeader = true) => {
+    if (commands.length) {
+      footer();
+      pages.push(commands.join("\n"));
+    }
+    commands = [];
+    pageNumber += 1;
+    rect(0, 0, pageWidth, pageHeight, "#ffffff");
+    if (withHeader) header();
+    else y = margin;
+  };
+  const ensure = height => {
+    if (y + height > pageHeight - 58) newPage(true);
+  };
+  const addWrapped = (value, x, width, size = 10, bold = false, fill = "#17212f", leading = size + 4) => {
+    const lines = wrap(value, size, width);
+    ensure(lines.length * leading + 3);
+    lines.forEach(row => {
+      text(row, x, y, size, bold, fill);
+      y += leading;
+    });
+  };
+
+  newPage(false);
+
+  return {
+    cover(title, subtitle, lines) {
+      rect(0, 0, pageWidth, 150, "#111827");
+      rect(margin, 48, 42, 42, "#0f766e");
+      rect(margin + 13, 62, 24, 4, "#ffffff");
+      rect(margin + 13, 76, 24, 4, "#ffffff");
+      text("SASE", margin + 56, 75, 13, true, "#6ee7d8");
+      text(title, margin, 206, 28, true, "#17212f");
+      text(subtitle, margin, 232, 13, false, "#647084");
+      y = 276;
+      lines.forEach(item => this.kv("Alcance", item));
+      y += 16;
+    },
+    section(title) {
+      ensure(54);
+      y += 6;
+      rect(margin, y, contentWidth, 28, "#eef4f8");
+      text(title, margin + 12, y + 18, 14, true, "#17212f");
+      y += 42;
+    },
+    subsection(title) {
+      ensure(30);
+      y += 4;
+      text(title, margin, y, 12, true, "#0f766e");
+      y += 18;
+    },
+    paragraph(value) {
+      addWrapped(value, margin, contentWidth, 10, false, "#17212f", 14);
+      y += 4;
+    },
+    bullet(value) {
+      ensure(18);
+      text("-", margin + 8, y, 10, true, "#0f766e");
+      addWrapped(value, margin + 22, contentWidth - 22, 10, false, "#17212f", 14);
+    },
+    kv(label, value) {
+      ensure(28);
+      addWrapped(label, margin, 135, 9, true, "#647084", 12);
+      const labelEnd = y;
+      y -= 12;
+      addWrapped(value, margin + 148, contentWidth - 148, 10, false, "#17212f", 14);
+      y = Math.max(y, labelEnd) + 4;
+    },
+    toBlob() {
+      footer();
+      pages.push(commands.join("\n"));
+      const objects = [];
+      const pageRefs = pages.map((_, index) => `${6 + index * 2} 0 R`).join(" ");
+      objects[1] = "<< /Type /Catalog /Pages 2 0 R >>";
+      objects[2] = `<< /Type /Pages /Kids [${pageRefs}] /Count ${pages.length} >>`;
+      objects[3] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>";
+      objects[4] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>";
+      pages.forEach((stream, index) => {
+        const contentId = 5 + index * 2;
+        const pageId = 6 + index * 2;
+        objects[contentId] = `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`;
+        objects[pageId] = `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth.toFixed(2)} ${pageHeight.toFixed(2)}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${contentId} 0 R >>`;
+      });
+
+      let output = "%PDF-1.4\n";
+      const offsets = [0];
+      for (let id = 1; id < objects.length; id += 1) {
+        offsets[id] = output.length;
+        output += `${id} 0 obj\n${objects[id]}\nendobj\n`;
+      }
+      const xrefOffset = output.length;
+      output += `xref\n0 ${objects.length}\n0000000000 65535 f \n`;
+      for (let id = 1; id < objects.length; id += 1) {
+        output += `${String(offsets[id]).padStart(10, "0")} 00000 n \n`;
+      }
+      output += `trailer\n<< /Size ${objects.length} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+      return new Blob([output], { type: "application/pdf" });
+    }
+  };
 }
 
 function refresh() {
