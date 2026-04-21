@@ -1,0 +1,538 @@
+const vendors = [
+  {
+    name: "Zscaler",
+    color: "#2563eb",
+    logo: "https://www.zscaler.com/favicon.ico",
+    docsUrl: "https://help.zscaler.com/",
+    productUrl: "https://www.zscaler.com/products/zscaler-client-connector",
+    ens: "ENS Alta",
+    ensDetail: "Certificación ENS High publicada por Zscaler para su plataforma cloud.",
+    ensUrl: "https://www.zscaler.com/es/industries/security-and-compliance",
+    strength: 4.6,
+    fit: 4.1,
+    risk: 2,
+    gartner: "SSE Leader · SASE Visionary",
+    bestFor: "Cloud-first, ZTNA, SWG y usuarios remotos.",
+    caution: "Validar SD-WAN, forwarding y apps no web."
+  },
+  {
+    name: "Netskope",
+    color: "#0f766e",
+    logo: "https://www.netskope.com/favicon.ico",
+    docsUrl: "https://docs.netskope.com/en/",
+    productUrl: "https://www.netskope.com/netskope-one",
+    ens: "ENS Alta",
+    ensDetail: "Netskope publica certificación National Security Scheme en categoría High.",
+    ensUrl: "https://www.netskope.com/company/security-compliance-and-assurance",
+    strength: 4.3,
+    fit: 4.5,
+    risk: 2,
+    gartner: "SSE Leader · SASE Leader",
+    bestFor: "DLP, CASB, SaaS y control de datos.",
+    caution: "Validar Endpoint DLP y diseño de sedes."
+  },
+  {
+    name: "Palo Alto Networks",
+    color: "#6d28d9",
+    logo: "https://www.paloaltonetworks.com/favicon.ico",
+    docsUrl: "https://docs.paloaltonetworks.com/prisma-access/administration",
+    productUrl: "https://www.paloaltonetworks.com/sase/access",
+    ens: "No evidenciado públicamente",
+    ensDetail: "No se ha localizado certificación ENS pública para Prisma Access/SASE; sí publica otras certificaciones globales.",
+    ensUrl: "https://www.paloaltonetworks.com/company/certifications.html",
+    strength: 4.7,
+    fit: 4.6,
+    risk: 3,
+    gartner: "SSE Leader · SASE Leader",
+    bestFor: "Plataforma enterprise, Prisma SASE 4.0, Cortex XSIAM/XDR y seguridad AI.",
+    caution: "Coste, complejidad, gobierno de políticas y adopción real de plataforma.",
+    platform: [
+      "Cortex XSIAM",
+      "Cortex XDR/XSOAR/Xpanse",
+      "Prisma SASE 4.0",
+      "Prisma Access Browser",
+      "Prisma AIRS 3.0",
+      "Strata Cloud Manager"
+    ],
+    platformUrl: "https://www.paloaltonetworks.com/cortex/cortex-xsiam"
+  },
+  {
+    name: "Fortinet",
+    color: "#b45309",
+    logo: "https://www.fortinet.com/favicon.ico",
+    docsUrl: "https://docs.fortinet.com/product/fortisase",
+    productUrl: "https://www.fortinet.com/products/fortisase",
+    ens: "Vía servicio gestionado",
+    ensDetail: "Telefónica Tech publica ENS Alta para su servicio gestionado flexWAN by Fortinet; no equivale automáticamente a FortiSASE directo.",
+    ensUrl: "https://telefonicatech.com/en/news/managed-flexwan-ens-high",
+    strength: 4.1,
+    fit: 4.0,
+    risk: 4,
+    gartner: "SASE Leader · SSE Challenger",
+    bestFor: "Sedes, SD-WAN, FortiGate y TCO.",
+    caution: "Exigir disciplina de parcheo y hardening admin."
+  },
+  {
+    name: "Cisco",
+    color: "#334155",
+    logo: "https://www.cisco.com/favicon.ico",
+    docsUrl: "https://docs.sse.cisco.com/sse-user-guide/docs/welcome-cisco-secure-access",
+    productUrl: "https://www.cisco.com/site/us/en/solutions/secure-access-service-edge-sase/index.html",
+    ens: "ENS Alta",
+    ensDetail: "Cisco Secure Access publica ENS High como certificación global del servicio.",
+    ensUrl: "https://www.cisco.com/site/us/en/products/security/secure-access/compliance.html",
+    strength: 3.9,
+    fit: 4.1,
+    risk: 3,
+    gartner: "SASE ecosystem player",
+    bestFor: "Entornos Cisco, SD-WAN, ISE y observabilidad.",
+    caution: "Validar convergencia real de consola y operación."
+  }
+];
+
+const criteria = [
+  { id: "threat", label: "Eficacia de prevención", weight: 5, scores: [5, 4, 5, 4, 4] },
+  { id: "dlp", label: "DLP", weight: 5, scores: [4, 5, 4, 4, 3] },
+  { id: "casb", label: "CASB", weight: 4, scores: [4, 5, 4, 3, 3] },
+  { id: "ztna", label: "ZTNA", weight: 5, scores: [5, 4, 4, 3, 3] },
+  { id: "swg", label: "SWG", weight: 5, scores: [5, 5, 4, 4, 4] },
+  { id: "sdwan", label: "SD-WAN", weight: 4, scores: [2, 3, 4, 5, 4] },
+  { id: "performance", label: "Rendimiento global", weight: 4, scores: [5, 4, 4, 4, 4] },
+  { id: "ops", label: "Simplicidad operacional", weight: 4, scores: [4, 4, 3, 4, 3] },
+  { id: "apps", label: "Convivencia con apps críticas", weight: 5, scores: [4, 5, 5, 4, 5] },
+  { id: "ecosystem", label: "Integraciones", weight: 4, scores: [4, 4, 5, 4, 5] },
+  { id: "soc", label: "Integración SOC / XSIAM / SIEM", weight: 4, scores: [3, 4, 5, 4, 4] },
+  { id: "implementation", label: "Implementación y provisión", weight: 4, scores: [4, 4, 3, 4, 3] },
+  { id: "onprem", label: "On-premise / soberanía", weight: 3, scores: [2, 2, 3, 5, 4] },
+  { id: "success", label: "Casos de éxito públicos", weight: 3, scores: [5, 5, 4, 5, 5] },
+  { id: "risk", label: "Riesgo de vulnerabilidades", weight: 4, scores: [4, 4, 3, 2, 3] },
+  { id: "tco", label: "TCO", weight: 4, scores: [3, 3, 2, 5, 4] }
+];
+
+const useCases = [
+  { label: "ZTNA para apps privadas", fit: [5, 4, 4, 3, 3], required: false },
+  { label: "Acceso terceros sin VPN", fit: [5, 4, 4, 3, 4], required: false },
+  { label: "SWG usuarios remotos", fit: [5, 5, 4, 4, 4], required: false },
+  { label: "DLP SaaS y web", fit: [4, 5, 4, 4, 3], required: false },
+  { label: "CASB API para SaaS", fit: [4, 5, 4, 3, 3], required: false },
+  { label: "Control GenAI", fit: [4, 4, 5, 3, 4], required: false },
+  { label: "Inspección TLS", fit: [5, 5, 4, 4, 4], required: false },
+  { label: "SD-WAN para sedes", fit: [2, 3, 4, 5, 4], required: false },
+  { label: "FWaaS", fit: [4, 4, 5, 4, 4], required: false },
+  { label: "DEM experiencia usuario", fit: [4, 4, 4, 3, 5], required: false },
+  { label: "Integración XSIAM/SIEM/SOAR", fit: [3, 4, 5, 4, 4], required: false },
+  { label: "Provisión rápida y rollout por fases", fit: [4, 4, 3, 4, 3], required: false },
+  { label: "Opción on-premise / soberana", fit: [2, 2, 3, 5, 4], required: false },
+  { label: "Residencia datos UE", fit: [4, 4, 4, 4, 4], required: false },
+  { label: "Coexistencia red actual", fit: [3, 4, 5, 5, 5], required: false }
+];
+
+const riskItems = [
+  {
+    vendor: "Zscaler",
+    level: "Media",
+    items: ["CVE-2026-22569 en Client Connector Windows", "CVE-2025-54983 con bypass potencial de forwarding"],
+    action: "Exigir versión mínima, hardening de ZCC y prueba de forwarding."
+  },
+  {
+    vendor: "Netskope",
+    level: "Media",
+    items: ["NSKPSA-2026-001 / CVE-2026-2809 Endpoint DLP", "Advisories 2025 en Netskope Client y DLP"],
+    action: "Exigir R135+ o backports y plan de actualización de agente."
+  },
+  {
+    vendor: "Palo Alto Networks",
+    level: "Alta",
+    items: ["CVE-2026-0227 PAN-OS / Prisma Access GlobalProtect DoS", "Sin workaround para PAN-OS afectado"],
+    action: "Validar fixed release y exposición de GlobalProtect/PAN-OS."
+  },
+  {
+    vendor: "Fortinet",
+    level: "Alta",
+    items: ["CVE-2025-59718/59719 FortiCloud SSO", "CVE-2026-24858 con explotación reportada por terceros"],
+    action: "Condicionar a patch governance, revisión IoC y mínima exposición de gestión."
+  },
+  {
+    vendor: "Cisco",
+    level: "Alta",
+    items: ["Catalyst SD-WAN Manager CVEs 2026 con CVSS 9.8", "Sin workaround en advisory SD-WAN crítico"],
+    action: "Exigir fixed release, hardening admin y revisión PSIRT."
+  }
+];
+
+const techItems = [
+  {
+    vendor: "Zscaler",
+    tunnel: "Z-Tunnel 2.0 con DTLS/TLS; ZPA usa TLS para TCP/UDP hacia apps privadas.",
+    site: "GRE recomendado para sedes; IPSec alternativo; PAC y Branch Connector.",
+    tls: "CA corporativa/Zscaler y excepciones para inspección TLS.",
+    validate: "Modo Z-Tunnel, bypass, trusted networks, IP egress estable y apps no web."
+  },
+  {
+    vendor: "Netskope",
+    tunnel: "Netskope Client usa certificados de cliente para túneles hacia Netskope/NewEdge.",
+    site: "GRE/IPsec, cloud explicit proxy, proxy chaining y DPOP/on-prem forward proxy.",
+    tls: "CA Netskope/custom/BYOK y rotación de CA para SSL interception.",
+    validate: "Versión NS Client, CA rotation, DPOP, NPA Publishers y endpoints sin admin."
+  },
+  {
+    vendor: "Palo Alto Networks",
+    tunnel: "Prisma Access cifra entre nodos MU/RN/SPN/SC-CAN y datacenter.",
+    site: "Remote networks mediante IPSec; perfiles IKE/IPSec configurables.",
+    tls: "SSL decryption integrado; logs en Strata Logging Service.",
+    validate: "AES/SHA/DH/PFS, service infrastructure subnet, logging y gestión Panorama/Strata."
+  },
+  {
+    vendor: "Fortinet",
+    tunnel: "FortiClient agent-based; modos agentless/proxy según caso.",
+    site: "Thin Edge, FortiGate Secure Edge, Branch On-Ramp, Private Proxy y Proxy.",
+    tls: "Deep inspection requiere CA FortiSASE en endpoints en ciertos modos.",
+    validate: "Licencias edge, límites, CA, FortiCloud, soberanía y PoPs."
+  },
+  {
+    vendor: "Cisco",
+    tunnel: "Cisco Secure Client con túnel seguro cifrado; ZTNA y VPNaaS.",
+    site: "IPsec tunnels, PAC files, proxy chaining e integración SD-WAN.",
+    tls: "Full/selective TLS decryption; FWaaS descifra antes de inspección.",
+    validate: "ZTNA vs VPNaaS, split tunnel, SGT/ISE, mobile y Resource Connectors."
+  }
+];
+
+const deploymentItems = [
+  {
+    vendor: "Zscaler",
+    implementation: "Provisión cloud con Zscaler Client Connector, PAC/tunnel/forwarding, conectores ZPA y GRE/IPSec para sedes.",
+    onprem: "No como SASE on-prem completo. Usa conectores/forwarders y componentes virtuales, pero el plano SASE principal es cloud.",
+    success: [
+      { label: "CSC", url: "https://www.zscaler.com/customers/csc" },
+      { label: "Protegrity", url: "https://www.zscaler.com/customers/protegrity" }
+    ],
+    poc: "Validar ZCC, bypass, apps privadas no web, PoP elegido y operación de conectores."
+  },
+  {
+    vendor: "Netskope",
+    implementation: "Provisión cloud con Netskope Client, NewEdge, NPA Publishers, GRE/IPSec, explicit proxy y despliegue por grupos.",
+    onprem: "No como SASE on-prem completo. Puede usar publishers/DPOP/proxy chaining, pero el servicio SASE es cloud-delivered.",
+    success: [
+      { label: "Clientes Netskope", url: "https://www.netskope.com/customers" },
+      { label: "Orbia", url: "https://www.netskope.com/customers" }
+    ],
+    poc: "Validar steering, DLP endpoint, CA, publishers y cobertura SaaS concreta."
+  },
+  {
+    vendor: "Palo Alto Networks",
+    implementation: "Provisión de Prisma Access con remote networks, service connections, mobile users, Strata/Panorama y logging.",
+    onprem: "Híbrido, no SASE on-prem puro. Puede convivir con NGFW/PAN-OS on-prem, Cortex y conectividad Prisma Access.",
+    success: [
+      { label: "Prisma Access SASE ROI", url: "https://www.paloaltonetworks.com/customers/accelerating-return-on-sase-investment-with-palo-alto-networks-customer-success" },
+      { label: "Customer Success", url: "https://www.paloaltonetworks.com/services/customer-success" }
+    ],
+    poc: "Validar tiempos de alta de región, service connections, logs hacia XSIAM/SIEM y operación Strata/Panorama."
+  },
+  {
+    vendor: "Fortinet",
+    implementation: "Provisión desde FortiSASE/FortiManager/FortiGate, integración SD-WAN y FortiClient; buena transición desde Fortinet instalado.",
+    onprem: "Sí como opción fuerte: FortiSASE Sovereign se puede desplegar en datacenter del cliente para soberanía y control.",
+    success: [
+      { label: "Upper Grand District School Board", url: "https://www.fortinet.com/products/sase" },
+      { label: "Carolina Panthers", url: "https://www.fortinet.com/products/sase" },
+      { label: "AGU", url: "https://www.fortinet.com/products/sase" }
+    ],
+    poc: "Validar FortiSASE Sovereign si hay requisito on-prem/soberano, más parches, FortiClient y políticas unificadas."
+  },
+  {
+    vendor: "Cisco",
+    implementation: "Provisión con Cisco Secure Access, Secure Client, SD-WAN, Umbrella, Duo, ISE y ThousandEyes según alcance.",
+    onprem: "Híbrido fuerte por componentes Cisco on-prem/edge, aunque Secure Access/SASE sigue siendo cloud-delivered.",
+    success: [
+      { label: "Cisco SASE deployment case", url: "https://www.cisco.com/c/en/us/solutions/collateral/executive-perspectives/sase-cx-deployment.html" },
+      { label: "Qdoba", url: "https://umbrella.cisco.com/info/qdoba-case-study-cisco-secure-sase-solutions" },
+      { label: "Cisco SASE customer stories", url: "https://www.cisco.com/site/us/en/solutions/secure-access-service-edge-sase/index.html" }
+    ],
+    poc: "Validar consola, convergencia real, Secure Client, SD-WAN, ISE/SGT, ThousandEyes y excepciones SaaS."
+  }
+];
+
+const scenarios = {
+  balanced: {},
+  cloud: { ztna: 5, swg: 5, performance: 5, sdwan: 2, tco: 3 },
+  data: { dlp: 5, casb: 5, ecosystem: 4, risk: 5, sdwan: 2 },
+  branch: { sdwan: 5, apps: 5, performance: 4, tco: 5, ztna: 3 },
+  platform: { ecosystem: 5, soc: 5, apps: 5, threat: 5, ops: 4, implementation: 4, tco: 3 }
+};
+
+const state = {
+  weights: Object.fromEntries(criteria.map(c => [c.id, c.weight])),
+  required: Object.fromEntries(useCases.map(u => [u.label, u.required]))
+};
+
+function scoreVendors() {
+  const result = vendors.map((vendor, vendorIndex) => {
+    let score = 0;
+    let totalWeight = 0;
+    criteria.forEach(criterion => {
+      const weight = Number(state.weights[criterion.id]);
+      score += weight * criterion.scores[vendorIndex];
+      totalWeight += weight;
+    });
+    const gates = useCases
+      .filter(useCase => state.required[useCase.label] && useCase.fit[vendorIndex] < 4)
+      .map(useCase => useCase.label);
+
+    return {
+      ...vendor,
+      score: score / totalWeight,
+      gates
+    };
+  });
+
+  return result.sort((a, b) => b.score - a.score);
+}
+
+function renderRanking() {
+  const ranked = scoreVendors();
+  const max = Math.max(...ranked.map(item => item.score));
+  document.getElementById("rankingBars").innerHTML = ranked.map(item => `
+    <div class="ranking-row">
+      <div class="vendor-name with-logo"><img src="${item.logo}" alt="Logo ${item.name}" loading="lazy">${item.name}</div>
+      <div class="bar-track" aria-hidden="true">
+        <div class="bar-fill" style="width:${(item.score / max) * 100}%;background:${item.color}"></div>
+      </div>
+      <div class="score">${item.score.toFixed(2)}</div>
+      ${item.gates.length ? `<div class="gate-note">Apto condicionado: ${item.gates.join(", ")}</div>` : ""}
+    </div>
+  `).join("");
+
+  const firstWithoutGate = ranked.find(item => item.gates.length === 0) || ranked[0];
+  document.getElementById("winnerName").textContent = firstWithoutGate.name;
+  document.getElementById("winnerReason").textContent = `${firstWithoutGate.bestFor} ${firstWithoutGate.gates.length ? "Tiene gates que deben resolverse en PoC." : "No presenta bloqueos imprescindibles con la selección actual."}`;
+  document.getElementById("gateCount").textContent = ranked.reduce((sum, item) => sum + item.gates.length, 0);
+  document.getElementById("riskAverage").textContent = (vendors.reduce((sum, v) => sum + v.risk, 0) / vendors.length).toFixed(1);
+}
+
+function renderQuadrant() {
+  const svg = document.getElementById("quadrantChart");
+  const ranked = scoreVendors();
+  const plot = (value, min, max, size, pad) => pad + ((value - min) / (max - min)) * (size - pad * 2);
+  const yPlot = (value, min, max, size, pad) => size - pad - ((value - min) / (max - min)) * (size - pad * 2);
+
+  svg.innerHTML = `
+    <rect x="0" y="0" width="520" height="360" rx="8" fill="#fbfcfe"/>
+    <line x1="70" y1="180" x2="490" y2="180" stroke="#d8dee8" stroke-width="2"/>
+    <line x1="280" y1="28" x2="280" y2="318" stroke="#d8dee8" stroke-width="2"/>
+    <line x1="70" y1="318" x2="490" y2="318" stroke="#17212f" stroke-width="2"/>
+    <line x1="70" y1="318" x2="70" y2="28" stroke="#17212f" stroke-width="2"/>
+    <text x="286" y="48" fill="#647084" font-size="12" font-weight="800">Priorizar</text>
+    <text x="78" y="48" fill="#647084" font-size="12" font-weight="800">Potencial</text>
+    <text x="350" y="342" fill="#647084" font-size="12" font-weight="800">Ajuste cliente</text>
+    <text x="18" y="170" fill="#647084" font-size="12" font-weight="800" transform="rotate(-90 18 170)">Fortaleza</text>
+    ${ranked.map(item => {
+      const x = plot(item.fit, 3, 5, 520, 70);
+      const y = yPlot(item.strength, 3, 5, 360, 42);
+      const size = item.gates.length ? 12 : 15;
+      return `
+        <circle cx="${x}" cy="${y}" r="${size}" fill="${item.color}" opacity="0.92"/>
+        <text x="${x + 18}" y="${y + 5}" fill="#17212f" font-size="13" font-weight="850">${item.name}</text>
+      `;
+    }).join("")}
+  `;
+}
+
+function renderVendors() {
+  document.getElementById("vendorStrip").innerHTML = vendors.map(vendor => `
+    <article class="vendor-tile">
+      <div class="vendor-card-head">
+        <img src="${vendor.logo}" alt="Logo ${vendor.name}" loading="lazy">
+        <strong>${vendor.name}</strong>
+      </div>
+      <div class="badge-row">
+        <span class="badge">${vendor.gartner}</span>
+        <span class="badge ens-badge">${vendor.ens}</span>
+      </div>
+      <p>${vendor.bestFor}</p>
+      ${vendor.platform ? `
+        <div class="platform-list">
+          <span>Nuevos productos / efecto plataforma</span>
+          <div class="badge-row">
+            ${vendor.platform.map(product => `<span class="badge">${product}</span>`).join("")}
+          </div>
+        </div>
+      ` : ""}
+      <p><strong>ENS:</strong> ${vendor.ensDetail}</p>
+      <p><strong>Cautela:</strong> ${vendor.caution}</p>
+      <div class="vendor-links">
+        <a href="${vendor.docsUrl}" target="_blank" rel="noreferrer">Documentación oficial</a>
+        <a href="${vendor.productUrl}" target="_blank" rel="noreferrer">Página producto</a>
+        <a href="${vendor.ensUrl}" target="_blank" rel="noreferrer">Evidencia ENS</a>
+        ${vendor.platformUrl ? `<a href="${vendor.platformUrl}" target="_blank" rel="noreferrer">Cortex XSIAM</a>` : ""}
+      </div>
+    </article>
+  `).join("");
+}
+
+function renderCriteria() {
+  document.getElementById("criteriaList").innerHTML = criteria.map(criterion => `
+    <div class="criterion">
+      <label for="weight-${criterion.id}">${criterion.label}</label>
+      <input id="weight-${criterion.id}" data-criterion="${criterion.id}" type="range" min="1" max="5" step="1" value="${state.weights[criterion.id]}">
+      <span class="weight-value" id="value-${criterion.id}">${state.weights[criterion.id]}</span>
+    </div>
+  `).join("");
+
+  document.querySelectorAll("[data-criterion]").forEach(input => {
+    input.addEventListener("input", event => {
+      const id = event.target.dataset.criterion;
+      state.weights[id] = Number(event.target.value);
+      document.getElementById(`value-${id}`).textContent = event.target.value;
+      refresh();
+    });
+  });
+}
+
+function renderUseCases() {
+  document.getElementById("usecaseList").innerHTML = useCases.map(useCase => `
+    <div class="usecase">
+      <div class="usecase-title">${useCase.label}</div>
+      <button class="toggle ${state.required[useCase.label] ? "active" : ""}" data-usecase="${useCase.label}" type="button">
+        ${state.required[useCase.label] ? "Imprescindible" : "Deseable"}
+      </button>
+      <div class="fit-chips">
+        ${vendors.map((vendor, index) => {
+          const fit = useCase.fit[index];
+          const cls = fit >= 4 ? "high" : "low";
+          return `<span class="fit-chip ${cls}">${vendor.name}: ${fit}</span>`;
+        }).join("")}
+      </div>
+    </div>
+  `).join("");
+
+  document.querySelectorAll("[data-usecase]").forEach(button => {
+    button.addEventListener("click", event => {
+      const label = event.currentTarget.dataset.usecase;
+      state.required[label] = !state.required[label];
+      renderUseCases();
+      refresh();
+    });
+  });
+}
+
+function renderRisks() {
+  document.getElementById("riskGrid").innerHTML = riskItems.map(item => `
+    <article class="risk-item">
+      <div class="risk-head">
+        <strong>${item.vendor}</strong>
+        <span class="risk-level ${item.level.toLowerCase()}">${item.level}</span>
+      </div>
+      <ul>
+        ${item.items.map(risk => `<li>${risk}</li>`).join("")}
+      </ul>
+      <p><strong>Acción:</strong> ${item.action}</p>
+    </article>
+  `).join("");
+}
+
+function renderTechnical() {
+  document.getElementById("techGrid").innerHTML = techItems.map(item => {
+    const vendor = vendors.find(v => v.name === item.vendor);
+    return `
+      <article class="tech-item">
+        <div class="vendor-card-head">
+          <img src="${vendor.logo}" alt="Logo ${item.vendor}" loading="lazy">
+          <strong>${item.vendor}</strong>
+        </div>
+        <dl>
+          <div><dt>Túnel usuario</dt><dd>${item.tunnel}</dd></div>
+          <div><dt>Sedes / forwarding</dt><dd>${item.site}</dd></div>
+          <div><dt>TLS inspection</dt><dd>${item.tls}</dd></div>
+          <div><dt>Validar en PoC</dt><dd>${item.validate}</dd></div>
+        </dl>
+      </article>
+    `;
+  }).join("");
+}
+
+function renderDeployment() {
+  document.getElementById("deploymentGrid").innerHTML = deploymentItems.map(item => {
+    const vendor = vendors.find(v => v.name === item.vendor);
+    return `
+      <article class="deployment-item">
+        <div class="vendor-card-head">
+          <img src="${vendor.logo}" alt="Logo ${item.vendor}" loading="lazy">
+          <strong>${item.vendor}</strong>
+        </div>
+        <div class="deployment-meta">
+          <div><span>Implementación / provisión</span><p>${item.implementation}</p></div>
+          <div><span>Solución on-premise</span><p>${item.onprem}</p></div>
+          <div><span>Validar en PoC</span><p>${item.poc}</p></div>
+        </div>
+        <ul>
+          ${item.success.map(story => `<li><a href="${story.url}" target="_blank" rel="noreferrer">${story.label}</a></li>`).join("")}
+        </ul>
+      </article>
+    `;
+  }).join("");
+}
+
+function applyScenario(name) {
+  const selected = scenarios[name] || {};
+  criteria.forEach(criterion => {
+    state.weights[criterion.id] = selected[criterion.id] || criterion.weight;
+  });
+  renderCriteria();
+  refresh();
+}
+
+function wireNavigation() {
+  document.querySelectorAll("[data-view]").forEach(button => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll("[data-view]").forEach(item => item.classList.remove("active"));
+      document.querySelectorAll(".view").forEach(view => view.classList.remove("active"));
+      button.classList.add("active");
+      document.getElementById(button.dataset.view).classList.add("active");
+    });
+  });
+
+  document.getElementById("scenario").addEventListener("change", event => applyScenario(event.target.value));
+  document.getElementById("resetApp").addEventListener("click", () => {
+    criteria.forEach(criterion => state.weights[criterion.id] = criterion.weight);
+    useCases.forEach(useCase => state.required[useCase.label] = false);
+    document.getElementById("scenario").value = "balanced";
+    renderCriteria();
+    renderUseCases();
+    refresh();
+  });
+  document.getElementById("exportJson").addEventListener("click", exportJson);
+}
+
+function exportJson() {
+  const payload = {
+    date: new Date().toISOString(),
+    weights: state.weights,
+    requiredUseCases: Object.entries(state.required).filter(([, required]) => required).map(([label]) => label),
+    ranking: scoreVendors()
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const anchor = document.createElement("a");
+  anchor.href = URL.createObjectURL(blob);
+  anchor.download = "sase-evaluation-result.json";
+  anchor.click();
+  URL.revokeObjectURL(anchor.href);
+}
+
+function refresh() {
+  renderRanking();
+  renderQuadrant();
+}
+
+function init() {
+  renderCriteria();
+  renderUseCases();
+  renderRisks();
+  renderTechnical();
+  renderDeployment();
+  renderVendors();
+  wireNavigation();
+  refresh();
+}
+
+init();

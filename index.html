@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SASE Decision Studio</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">SASE Decision Studio</p>
+      <h1>Evaluación visual de Zscaler, Netskope, Palo Alto, Fortinet y Cisco</h1>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-button" id="exportJson" type="button" aria-label="Exportar evaluación">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"/></svg>
+      </button>
+      <button class="icon-button" id="resetApp" type="button" aria-label="Restablecer evaluación">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.34-5.66M4 5v6h6"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <aside class="rail" aria-label="Navegación principal">
+      <button class="rail-item active" data-view="dashboard" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h7V4H4v9Zm9 7h7V4h-7v16ZM4 20h7v-5H4v5Z"/></svg>
+        <span>Panel</span>
+      </button>
+      <button class="rail-item" data-view="assessment" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14M5 12h14M5 19h9"/></svg>
+        <span>Scoring</span>
+      </button>
+      <button class="rail-item" data-view="usecases" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>
+        <span>Casos</span>
+      </button>
+      <button class="rail-item" data-view="risks" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 20h18L12 3Zm0 6v5m0 3h.01"/></svg>
+        <span>Riesgo</span>
+      </button>
+      <button class="rail-item" data-view="technical" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3M5 10h14v10H5z"/></svg>
+        <span>Cifrado</span>
+      </button>
+      <button class="rail-item" data-view="deployment" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17h16M7 17V7h10v10M9 7l3-3 3 3"/></svg>
+        <span>Implantación</span>
+      </button>
+    </aside>
+
+    <section class="workspace">
+      <section class="view active" id="dashboard">
+        <div class="summary-grid">
+          <article class="summary-panel decision-panel">
+            <div class="panel-heading">
+              <span class="kicker">Recomendación preliminar</span>
+              <strong id="winnerName">-</strong>
+            </div>
+            <p id="winnerReason">Ajusta los pesos y los casos imprescindibles para obtener una recomendación.</p>
+            <div class="scenario-control">
+              <label for="scenario">Escenario</label>
+              <select id="scenario">
+                <option value="balanced">Balanceado</option>
+                <option value="cloud">Cloud-first / remoto</option>
+                <option value="data">Data-centric / DLP</option>
+                <option value="branch">Sedes y SD-WAN</option>
+                <option value="platform">Plataforma enterprise</option>
+              </select>
+            </div>
+          </article>
+
+          <article class="summary-panel">
+            <span class="kicker">Bloqueos detectados</span>
+            <strong id="gateCount">0</strong>
+            <p>Casos imprescindibles que dejan proveedores como aptos condicionados.</p>
+          </article>
+
+          <article class="summary-panel">
+            <span class="kicker">Riesgo medio</span>
+            <strong id="riskAverage">-</strong>
+            <p>Lectura combinada de advisories recientes y exposición operativa.</p>
+          </article>
+        </div>
+
+        <div class="visual-grid">
+          <section class="visual-panel ranking-panel">
+            <div class="panel-title">
+              <h2>Ranking ponderado</h2>
+              <span>Score 1-5</span>
+            </div>
+            <div id="rankingBars" class="ranking-bars"></div>
+          </section>
+
+          <section class="visual-panel">
+            <div class="panel-title">
+              <h2>Cuadrante técnico</h2>
+              <span>Ajuste vs fortaleza</span>
+            </div>
+            <svg id="quadrantChart" class="quadrant" viewBox="0 0 520 360" role="img" aria-label="Cuadrante técnico de proveedores SASE"></svg>
+          </section>
+        </div>
+
+        <section class="visual-panel">
+          <div class="panel-title">
+            <h2>Lectura ejecutiva</h2>
+            <span>Cuándo elegir cada proveedor</span>
+          </div>
+          <div class="vendor-strip" id="vendorStrip"></div>
+        </section>
+      </section>
+
+      <section class="view" id="assessment">
+        <section class="visual-panel">
+          <div class="panel-title">
+            <h2>Ponderación de criterios</h2>
+            <span>Arrastra los sliders</span>
+          </div>
+          <div class="criteria-list" id="criteriaList"></div>
+        </section>
+      </section>
+
+      <section class="view" id="usecases">
+        <section class="visual-panel">
+          <div class="panel-title">
+            <h2>Casos imprescindibles</h2>
+            <span>Activan gates de descarte</span>
+          </div>
+          <div class="usecase-list" id="usecaseList"></div>
+        </section>
+      </section>
+
+      <section class="view" id="risks">
+        <section class="visual-panel">
+          <div class="panel-title">
+            <h2>Matriz de riesgo y vulnerabilidades</h2>
+            <span>Actualizado a 2026-04-21</span>
+          </div>
+          <div class="risk-grid" id="riskGrid"></div>
+        </section>
+      </section>
+
+      <section class="view" id="technical">
+        <section class="visual-panel">
+          <div class="panel-title">
+            <h2>Cifrado y especificaciones técnicas</h2>
+            <span>Steering, TLS inspection y validación PoC</span>
+          </div>
+          <div class="tech-grid" id="techGrid"></div>
+        </section>
+      </section>
+
+      <section class="view" id="deployment">
+        <section class="visual-panel">
+          <div class="panel-title">
+            <h2>Implementación, provisión y on-premise</h2>
+            <span>Modelo operativo y casos públicos</span>
+          </div>
+          <div class="deployment-grid" id="deploymentGrid"></div>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
