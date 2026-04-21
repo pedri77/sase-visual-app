@@ -570,7 +570,9 @@ select {
 .tech-grid,
 .deployment-grid,
 .innovation-grid,
-.framework-grid {
+.framework-grid,
+.profile-grid,
+.evidence-grid {
   display: grid;
   gap: 12px;
 }
@@ -581,7 +583,9 @@ select {
 .tech-item,
 .deployment-item,
 .innovation-item,
-.framework-item {
+.framework-item,
+.profile-panel,
+.evidence-item {
   position: relative;
   display: grid;
   gap: 12px;
@@ -672,7 +676,9 @@ input[type="range"] {
 .tech-grid,
 .deployment-grid,
 .innovation-grid,
-.framework-grid {
+.framework-grid,
+.profile-grid,
+.evidence-grid {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
@@ -680,7 +686,9 @@ input[type="range"] {
 .tech-item,
 .deployment-item,
 .innovation-item,
-.framework-item {
+.framework-item,
+.profile-panel,
+.evidence-item {
   align-content: start;
 }
 
@@ -793,7 +801,8 @@ input[type="range"] {
 .tech-item,
 .deployment-item,
 .innovation-item,
-.framework-item {
+.framework-item,
+.evidence-item {
   padding-left: 18px;
 }
 
@@ -811,9 +820,76 @@ input[type="range"] {
 
 .deployment-item p,
 .innovation-item p,
-.framework-item p {
+.framework-item p,
+.evidence-item p,
+.profile-panel p {
   margin: 0;
   color: var(--muted);
+}
+
+.profile-panel {
+  align-content: start;
+}
+
+.profile-panel label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.profile-panel textarea {
+  width: 100%;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 10px;
+  color: var(--ink);
+  background: white;
+  font: inherit;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.confidence-meter {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 7px;
+  background: #eef2f7;
+}
+
+.confidence-meter span,
+.evidence-row small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.confidence-meter strong {
+  font-size: 24px;
+}
+
+.evidence-row {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid #edf1f6;
+  border-radius: 7px;
+  background: white;
+}
+
+.evidence-row a {
+  color: var(--teal);
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.evidence-row a:hover {
+  text-decoration: underline;
 }
 
 .advantage-box,
@@ -909,7 +985,7 @@ input[type="range"] {
 
   .rail {
     position: static;
-    grid-template-columns: repeat(8, minmax(0, 1fr));
+    grid-template-columns: repeat(10, minmax(0, 1fr));
   }
 
   .rail-item {

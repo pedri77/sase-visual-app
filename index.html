@@ -39,6 +39,10 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h7V4H4v9Zm9 7h7V4h-7v16ZM4 20h7v-5H4v5Z"/></svg>
         <span>Panel</span>
       </button>
+      <button class="rail-item" data-view="profile" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0"/></svg>
+        <span>Cliente</span>
+      </button>
       <button class="rail-item" data-view="assessment" type="button">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14M5 12h14M5 19h9"/></svg>
         <span>Scoring</span>
@@ -50,6 +54,10 @@
       <button class="rail-item" data-view="framework" type="button">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5m0 14h16M8 15l3-4 3 2 4-6"/></svg>
         <span>Detección</span>
+      </button>
+      <button class="rail-item" data-view="evidence" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg>
+        <span>Evidencia</span>
       </button>
       <button class="rail-item" data-view="risks" type="button">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 20h18L12 3Zm0 6v5m0 3h.01"/></svg>
@@ -131,6 +139,16 @@
         </section>
       </section>
 
+      <section class="view" id="profile">
+        <section class="visual-panel">
+          <div class="panel-title">
+            <h2>Perfil del cliente</h2>
+            <span>Ajusta pesos y casos automáticamente</span>
+          </div>
+          <div class="profile-grid" id="profileGrid"></div>
+        </section>
+      </section>
+
       <section class="view" id="assessment">
         <section class="visual-panel">
           <div class="panel-title">
@@ -174,6 +192,16 @@
         </section>
       </section>
 
+      <section class="view" id="evidence">
+        <section class="visual-panel">
+          <div class="panel-title">
+            <h2>Evidencia y confianza</h2>
+            <span>Fuentes, PoC pendiente y solidez de cada nota</span>
+          </div>
+          <div class="evidence-grid" id="evidenceGrid"></div>
+        </section>
+      </section>
+
       <section class="view" id="technical">
         <section class="visual-panel">
           <div class="panel-title">
@@ -206,6 +234,7 @@
     </section>
   </main>
 
+  <script src="./data.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>

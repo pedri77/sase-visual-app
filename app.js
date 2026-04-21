@@ -1,397 +1,15 @@
-const vendors = [
-  {
-    name: "Zscaler",
-    color: "#2563eb",
-    logo: "https://www.zscaler.com/favicon.ico",
-    docsUrl: "https://help.zscaler.com/",
-    productUrl: "https://www.zscaler.com/products/zscaler-client-connector",
-    ens: "ENS Alta",
-    ensDetail: "Certificación ENS High publicada por Zscaler para su plataforma cloud.",
-    ensUrl: "https://www.zscaler.com/es/industries/security-and-compliance",
-    strength: 4.6,
-    fit: 4.1,
-    risk: 2,
-    gartner: "SSE Leader · SASE Visionary",
-    bestFor: "Cloud-first, ZTNA, SWG y usuarios remotos.",
-    caution: "Validar SD-WAN, forwarding y apps no web."
-  },
-  {
-    name: "Netskope",
-    color: "#0f766e",
-    logo: "https://www.netskope.com/favicon.ico",
-    docsUrl: "https://docs.netskope.com/en/",
-    productUrl: "https://www.netskope.com/netskope-one",
-    ens: "ENS Alta",
-    ensDetail: "Netskope publica certificación National Security Scheme en categoría High.",
-    ensUrl: "https://www.netskope.com/company/security-compliance-and-assurance",
-    strength: 4.3,
-    fit: 4.5,
-    risk: 2,
-    gartner: "SSE Leader · SASE Leader",
-    bestFor: "DLP, CASB, SaaS y control de datos.",
-    caution: "Validar Endpoint DLP y diseño de sedes."
-  },
-  {
-    name: "Palo Alto Networks",
-    color: "#6d28d9",
-    logo: "https://www.paloaltonetworks.com/favicon.ico",
-    docsUrl: "https://docs.paloaltonetworks.com/prisma-access/administration",
-    productUrl: "https://www.paloaltonetworks.com/sase/access",
-    ens: "No evidenciado públicamente",
-    ensDetail: "No se ha localizado certificación ENS pública para Prisma Access/SASE; sí publica otras certificaciones globales.",
-    ensUrl: "https://www.paloaltonetworks.com/company/certifications.html",
-    strength: 4.7,
-    fit: 4.6,
-    risk: 3,
-    gartner: "SSE Leader · SASE Leader",
-    bestFor: "Plataforma enterprise, Prisma SASE 4.0, Cortex XSIAM/XDR y seguridad AI.",
-    caution: "Coste, complejidad, gobierno de políticas y adopción real de plataforma.",
-    platform: [
-      "Cortex XSIAM",
-      "Cortex XDR/XSOAR/Xpanse",
-      "Prisma SASE 4.0",
-      "Prisma Access Browser",
-      "Prisma AIRS 3.0",
-      "Strata Cloud Manager"
-    ],
-    platformUrl: "https://www.paloaltonetworks.com/cortex/cortex-xsiam"
-  },
-  {
-    name: "Fortinet",
-    color: "#b45309",
-    logo: "https://www.fortinet.com/favicon.ico",
-    docsUrl: "https://docs.fortinet.com/product/fortisase",
-    productUrl: "https://www.fortinet.com/products/sase",
-    ens: "Vía servicio gestionado",
-    ensDetail: "Telefónica Tech publica ENS Alta para su servicio gestionado flexWAN by Fortinet; no equivale automáticamente a FortiSASE directo.",
-    ensUrl: "https://www.telefonica.es/es/wp-content/uploads/sites/10/2021/11/esquema-nacional-seguridad-2019-0011-TDE.pdf",
-    strength: 4.1,
-    fit: 4.0,
-    risk: 4,
-    gartner: "SASE Leader · SSE Challenger",
-    bestFor: "Sedes, SD-WAN, FortiGate y TCO (Coste Total de Propiedad).",
-    caution: "Exigir disciplina de parcheo y hardening admin."
-  },
-  {
-    name: "Cisco",
-    color: "#334155",
-    logo: "https://www.cisco.com/favicon.ico",
-    docsUrl: "https://docs.sse.cisco.com/sse-user-guide/docs/welcome-cisco-secure-access",
-    productUrl: "https://www.cisco.com/site/us/en/solutions/secure-access-service-edge-sase/index.html",
-    ens: "ENS Alta",
-    ensDetail: "Cisco Secure Access publica ENS High como certificación global del servicio.",
-    ensUrl: "https://www.cisco.com/site/us/en/products/security/secure-access/compliance.html",
-    strength: 3.9,
-    fit: 4.1,
-    risk: 3,
-    gartner: "SASE ecosystem player",
-    bestFor: "Entornos Cisco, SD-WAN, ISE y observabilidad.",
-    caution: "Validar convergencia real de consola y operación."
-  }
-];
-
-const criteria = [
-  { id: "threat", label: "Eficacia de prevención", weight: 5, scores: [5, 4, 5, 4, 4] },
-  { id: "dlp", label: "DLP", weight: 5, scores: [4, 5, 4, 4, 3] },
-  { id: "casb", label: "CASB", weight: 4, scores: [4, 5, 4, 3, 3] },
-  { id: "ztna", label: "ZTNA", weight: 5, scores: [5, 4, 4, 3, 3] },
-  { id: "swg", label: "SWG", weight: 5, scores: [5, 5, 4, 4, 4] },
-  { id: "sdwan", label: "SD-WAN", weight: 4, scores: [2, 3, 4, 5, 4] },
-  { id: "performance", label: "Rendimiento global", weight: 4, scores: [5, 4, 4, 4, 4] },
-  { id: "ops", label: "Simplicidad operacional", weight: 4, scores: [4, 4, 3, 4, 3] },
-  { id: "apps", label: "Convivencia con apps críticas", weight: 5, scores: [4, 5, 5, 4, 5] },
-  { id: "ecosystem", label: "Integraciones", weight: 4, scores: [4, 4, 5, 4, 5] },
-  { id: "soc", label: "Integración SOC / XSIAM / SIEM", weight: 4, scores: [3, 4, 5, 4, 4] },
-  { id: "implementation", label: "Implementación y provisión", weight: 4, scores: [4, 4, 3, 4, 3] },
-  { id: "onprem", label: "On-premise / soberanía", weight: 3, scores: [2, 2, 3, 5, 4] },
-  { id: "success", label: "Casos de éxito públicos", weight: 3, scores: [5, 5, 4, 5, 5] },
-  { id: "quantum", label: "Quantum / PQC readiness", weight: 3, scores: [5, 3, 4, 5, 4] },
-  { id: "ai", label: "IA y seguridad de IA", weight: 4, scores: [5, 5, 5, 4, 5] },
-  { id: "risk", label: "Riesgo de vulnerabilidades", weight: 4, scores: [4, 4, 3, 2, 3] },
-  { id: "tco", label: "TCO (Coste Total de Propiedad)", weight: 4, scores: [3, 3, 2, 5, 4] }
-];
-
-const useCases = [
-  { label: "ZTNA para apps privadas", fit: [5, 4, 4, 3, 3], required: false },
-  { label: "Acceso terceros sin VPN", fit: [5, 4, 4, 3, 4], required: false },
-  { label: "SWG usuarios remotos", fit: [5, 5, 4, 4, 4], required: false },
-  { label: "DLP SaaS y web", fit: [4, 5, 4, 4, 3], required: false },
-  { label: "CASB API para SaaS", fit: [4, 5, 4, 3, 3], required: false },
-  { label: "Control GenAI", fit: [4, 4, 5, 3, 4], required: false },
-  { label: "Inspección TLS", fit: [5, 5, 4, 4, 4], required: false },
-  { label: "SD-WAN para sedes", fit: [2, 3, 4, 5, 4], required: false },
-  { label: "FWaaS", fit: [4, 4, 5, 4, 4], required: false },
-  { label: "DEM experiencia usuario", fit: [4, 4, 4, 3, 5], required: false },
-  { label: "Integración XSIAM/SIEM/SOAR", fit: [3, 4, 5, 4, 4], required: false },
-  { label: "Provisión rápida y rollout por fases", fit: [4, 4, 3, 4, 3], required: false },
-  { label: "Opción on-premise / soberana", fit: [2, 2, 3, 5, 4], required: false },
-  { label: "Preparación quantum / PQC", fit: [5, 3, 4, 5, 4], required: false },
-  { label: "Control y seguridad de IA", fit: [5, 5, 5, 4, 5], required: false },
-  { label: "Residencia datos UE", fit: [4, 4, 4, 4, 4], required: false },
-  { label: "Coexistencia red actual", fit: [3, 4, 5, 5, 5], required: false }
-];
-
-const riskItems = [
-  {
-    vendor: "Zscaler",
-    level: "Media",
-    items: ["CVE-2026-22569 en Client Connector Windows", "CVE-2025-54983 con bypass potencial de forwarding"],
-    action: "Exigir versión mínima, hardening de ZCC y prueba de forwarding."
-  },
-  {
-    vendor: "Netskope",
-    level: "Media",
-    items: ["NSKPSA-2026-001 / CVE-2026-2809 Endpoint DLP", "Advisories 2025 en Netskope Client y DLP"],
-    action: "Exigir R135+ o backports y plan de actualización de agente."
-  },
-  {
-    vendor: "Palo Alto Networks",
-    level: "Alta",
-    items: ["CVE-2026-0227 PAN-OS / Prisma Access GlobalProtect DoS", "Sin workaround para PAN-OS afectado"],
-    action: "Validar fixed release y exposición de GlobalProtect/PAN-OS."
-  },
-  {
-    vendor: "Fortinet",
-    level: "Alta",
-    items: ["CVE-2025-59718/59719 FortiCloud SSO", "CVE-2026-24858 con explotación reportada por terceros"],
-    action: "Condicionar a patch governance, revisión IoC y mínima exposición de gestión."
-  },
-  {
-    vendor: "Cisco",
-    level: "Alta",
-    items: ["Catalyst SD-WAN Manager CVEs 2026 con CVSS 9.8", "Sin workaround en advisory SD-WAN crítico"],
-    action: "Exigir fixed release, hardening admin y revisión PSIRT."
-  }
-];
-
-const cveItems = [
-  {
-    vendor: "Zscaler",
-    cves: [
-      { id: "CVE-2026-22569", severity: "Media", product: "Client Connector Windows" },
-      { id: "CVE-2025-54983", severity: "Media", product: "Client Connector Windows" }
-    ],
-    source: "NVD / Zscaler advisories",
-    note: "Historial público menor que fabricantes con appliances expuestos; foco en agente y forwarding."
-  },
-  {
-    vendor: "Netskope",
-    cves: [
-      { id: "CVE-2026-2809", severity: "Media", product: "Endpoint DLP" },
-      { id: "CVE-2025-0309", severity: "Media", product: "Netskope Client" },
-      { id: "CVE-2025-5942", severity: "Media", product: "Netskope Client / Endpoint DLP" }
-    ],
-    source: "Netskope Security Advisories",
-    note: "Riesgo concentrado en cliente/endpoint; validar versión mínima y cadencia de actualización."
-  },
-  {
-    vendor: "Palo Alto Networks",
-    cves: [
-      { id: "CVE-2026-0227", severity: "Alta", product: "PAN-OS / Prisma Access GlobalProtect" },
-      { id: "CVE-2025-0108", severity: "Alta", product: "PAN-OS management" },
-      { id: "CVE-2024-3400", severity: "Crítica", product: "PAN-OS GlobalProtect" },
-      { id: "CVE-2024-0012", severity: "Crítica", product: "PAN-OS management" },
-      { id: "CVE-2024-9474", severity: "Alta", product: "PAN-OS management" }
-    ],
-    source: "Palo Alto Networks Security Advisories",
-    note: "Validar exposición de management/GlobalProtect, fixed releases y separación Prisma Access vs appliances."
-  },
-  {
-    vendor: "Fortinet",
-    cves: [
-      { id: "CVE-2025-59718", severity: "Alta", product: "FortiCloud SSO" },
-      { id: "CVE-2025-59719", severity: "Crítica", product: "FortiCloud SSO" },
-      { id: "CVE-2024-55591", severity: "Crítica", product: "FortiOS / FortiProxy" },
-      { id: "CVE-2023-27997", severity: "Crítica", product: "FortiOS / FortiProxy SSL-VPN" },
-      { id: "CVE-2022-40684", severity: "Crítica", product: "FortiOS / FortiProxy / FortiSwitchManager" }
-    ],
-    source: "Fortinet PSIRT / NVD",
-    note: "Mayor presión de patch governance si hay FortiGate/FortiManager/FortiSASE en arquitectura."
-  },
-  {
-    vendor: "Cisco",
-    cves: [
-      { id: "CVE-2026-20122", severity: "Alta", product: "Catalyst SD-WAN Manager" },
-      { id: "CVE-2026-20126", severity: "Alta", product: "Catalyst SD-WAN Manager" },
-      { id: "CVE-2026-20128", severity: "Alta", product: "Catalyst SD-WAN Manager" },
-      { id: "CVE-2026-20129", severity: "Crítica", product: "Catalyst SD-WAN Manager" },
-      { id: "CVE-2026-20133", severity: "Alta", product: "Catalyst SD-WAN Manager" }
-    ],
-    source: "Cisco Security Advisory cisco-sa-sdwan-authbp-qwCX8D4v",
-    note: "Riesgo ligado a SD-WAN Manager/vManage; exigir fixed release y hardening de administración."
-  }
-];
-
-const advancedMetrics = [
-  { id: "functional", label: "Functional Fit", weight: 25, scores: [4.3, 4.5, 4.6, 4.2, 4.2] },
-  { id: "detection", label: "Detection Effectiveness", weight: 20, scores: [4.6, 4.4, 4.7, 4.2, 4.4] },
-  { id: "telemetry", label: "Telemetry & Sources", weight: 15, scores: [4.2, 4.5, 4.7, 4.2, 4.5] },
-  { id: "intel", label: "Intelligence Value", weight: 15, scores: [4.5, 4.3, 4.8, 4.2, 4.6] },
-  { id: "data", label: "Data Quality", weight: 10, scores: [4.1, 4.6, 4.4, 4.0, 4.2] },
-  { id: "operability", label: "Operability", weight: 10, scores: [4.0, 4.2, 4.1, 4.2, 4.1] },
-  { id: "market", label: "Market Confidence", weight: 5, scores: [4.5, 4.4, 4.6, 4.3, 4.4] }
-];
-
-const threatHeatmap = [
-  { type: "Phishing", scores: [5, 4, 5, 4, 4] },
-  { type: "Malware", scores: [5, 4, 5, 4, 4] },
-  { type: "SaaS Abuse", scores: [4, 5, 4, 3, 4] },
-  { type: "Insider Risk", scores: [4, 5, 4, 4, 3] },
-  { type: "Data Exfiltration", scores: [4, 5, 4, 4, 3] }
-];
-
-const techItems = [
-  {
-    vendor: "Zscaler",
-    tunnel: "Z-Tunnel 2.0 con DTLS/TLS; ZPA usa TLS para TCP/UDP hacia apps privadas.",
-    site: "GRE recomendado para sedes; IPSec alternativo; PAC y Branch Connector.",
-    tls: "CA corporativa/Zscaler y excepciones para inspección TLS.",
-    validate: "Modo Z-Tunnel, bypass, trusted networks, IP egress estable y apps no web."
-  },
-  {
-    vendor: "Netskope",
-    tunnel: "Netskope Client usa certificados de cliente para túneles hacia Netskope/NewEdge.",
-    site: "GRE/IPsec, cloud explicit proxy, proxy chaining y DPOP/on-prem forward proxy.",
-    tls: "CA Netskope/custom/BYOK y rotación de CA para SSL interception.",
-    validate: "Versión NS Client, CA rotation, DPOP, NPA Publishers y endpoints sin admin."
-  },
-  {
-    vendor: "Palo Alto Networks",
-    tunnel: "Prisma Access cifra entre nodos MU/RN/SPN/SC-CAN y datacenter.",
-    site: "Remote networks mediante IPSec; perfiles IKE/IPSec configurables.",
-    tls: "SSL decryption integrado; logs en Strata Logging Service.",
-    validate: "AES/SHA/DH/PFS, service infrastructure subnet, logging y gestión Panorama/Strata."
-  },
-  {
-    vendor: "Fortinet",
-    tunnel: "FortiClient agent-based; modos agentless/proxy según caso.",
-    site: "Thin Edge, FortiGate Secure Edge, Branch On-Ramp, Private Proxy y Proxy.",
-    tls: "Deep inspection requiere CA FortiSASE en endpoints en ciertos modos.",
-    validate: "Licencias edge, límites, CA, FortiCloud, soberanía y PoPs."
-  },
-  {
-    vendor: "Cisco",
-    tunnel: "Cisco Secure Client con túnel seguro cifrado; ZTNA y VPNaaS.",
-    site: "IPsec tunnels, PAC files, proxy chaining e integración SD-WAN.",
-    tls: "Full/selective TLS decryption; FWaaS descifra antes de inspección.",
-    validate: "ZTNA vs VPNaaS, split tunnel, SGT/ISE, mobile y Resource Connectors."
-  }
-];
-
-const deploymentItems = [
-  {
-    vendor: "Zscaler",
-    implementation: "Provisión cloud con Zscaler Client Connector, PAC/tunnel/forwarding, conectores ZPA y GRE/IPSec para sedes.",
-    onprem: "No como SASE on-prem completo. Usa conectores/forwarders y componentes virtuales, pero el plano SASE principal es cloud.",
-    success: [
-      { label: "Customer Stories Zscaler", url: "https://www.zscaler.com/customers" },
-      { label: "CSC / Protegrity en customer stories", url: "https://www.zscaler.com/customers" }
-    ],
-    poc: "Validar ZCC, bypass, apps privadas no web, PoP elegido y operación de conectores."
-  },
-  {
-    vendor: "Netskope",
-    implementation: "Provisión cloud con Netskope Client, NewEdge, NPA Publishers, GRE/IPSec, explicit proxy y despliegue por grupos.",
-    onprem: "No como SASE on-prem completo. Puede usar publishers/DPOP/proxy chaining, pero el servicio SASE es cloud-delivered.",
-    success: [
-      { label: "Clientes Netskope", url: "https://www.netskope.com/customers" },
-      { label: "Orbia", url: "https://www.netskope.com/customers" }
-    ],
-    poc: "Validar steering, DLP endpoint, CA, publishers y cobertura SaaS concreta."
-  },
-  {
-    vendor: "Palo Alto Networks",
-    implementation: "Provisión de Prisma Access con remote networks, service connections, mobile users, Strata/Panorama y logging.",
-    onprem: "Híbrido, no SASE on-prem puro. Puede convivir con NGFW/PAN-OS on-prem, Cortex y conectividad Prisma Access.",
-    success: [
-      { label: "Prisma Access SASE ROI", url: "https://www.paloaltonetworks.com/customers/accelerating-return-on-sase-investment-with-palo-alto-networks-customer-success" },
-      { label: "Customer Success", url: "https://www.paloaltonetworks.com/services/customer-success" }
-    ],
-    poc: "Validar tiempos de alta de región, service connections, logs hacia XSIAM/SIEM y operación Strata/Panorama."
-  },
-  {
-    vendor: "Fortinet",
-    implementation: "Provisión desde FortiSASE/FortiManager/FortiGate, integración SD-WAN y FortiClient; buena transición desde Fortinet instalado.",
-    onprem: "Sí como opción fuerte: FortiSASE Sovereign se puede desplegar en datacenter del cliente para soberanía y control.",
-    success: [
-      { label: "Upper Grand District School Board", url: "https://www.fortinet.com/products/sase" },
-      { label: "Carolina Panthers", url: "https://www.fortinet.com/products/sase" },
-      { label: "AGU", url: "https://www.fortinet.com/products/sase" }
-    ],
-    poc: "Validar FortiSASE Sovereign si hay requisito on-prem/soberano, más parches, FortiClient y políticas unificadas."
-  },
-  {
-    vendor: "Cisco",
-    implementation: "Provisión con Cisco Secure Access, Secure Client, SD-WAN, Umbrella, Duo, ISE y ThousandEyes según alcance.",
-    onprem: "Híbrido fuerte por componentes Cisco on-prem/edge, aunque Secure Access/SASE sigue siendo cloud-delivered.",
-    success: [
-      { label: "Cisco SASE deployment case", url: "https://www.cisco.com/c/en/us/solutions/collateral/executive-perspectives/sase-cx-deployment.html" },
-      { label: "Cisco SASE customer stories", url: "https://www.cisco.com/site/us/en/solutions/secure-access-service-edge-sase/index.html" },
-      { label: "Cisco SASE customer stories", url: "https://www.cisco.com/site/us/en/solutions/secure-access-service-edge-sase/index.html" }
-    ],
-    poc: "Validar consola, convergencia real, Secure Client, SD-WAN, ISE/SGT, ThousandEyes y excepciones SaaS."
-  }
-];
-
-const quantumAiItems = [
-  {
-    vendor: "Zscaler",
-    quantumScore: 5,
-    aiScore: 5,
-    quantum: "SSE quantum-ready con inspección inline de tráfico PQC, soporte de intercambio híbrido ML-KEM, visibilidad/reporting de cifrados quantum y gobierno de migración.",
-    ai: "Zscaler AI Security Suite para visibilidad, control y gobierno de GenAI/agentic AI; protección de datos y control de uso de IA en la empresa.",
-    validate: "Probar inspección de sesiones TLS/PQC, logs de algoritmos, control de prompts, DLP en GenAI y políticas para shadow AI.",
-    sources: ["https://www.zscaler.com/innovations-launch/quantum-security", "https://ir.zscaler.com/news-releases/news-release-details/zscaler-unveils-new-innovations-secure-enterprise-ai-adoption"]
-  },
-  {
-    vendor: "Netskope",
-    quantumScore: 3,
-    aiScore: 5,
-    quantum: "Roadmap post-cuántico documentado: Netskope indica evaluación de usos de cifrado en Netskope One y foco en ML-KEM 768; quantum-resilient Netskope One aparece como desarrollo/sandbox.",
-    ai: "Netskope One AI Security cubre AI apps, datos, herramientas, agentes, flujos agentic y control de MCP; muy alineado con CASB/DLP data-centric.",
-    validate: "Solicitar disponibilidad real de PQC en tenant, roadmap contractual, AI gateway, control MCP, DLP en prompts y cobertura de modelos privados.",
-    sources: ["https://www.netskope.com/blog/planning-for-a-post-quantum-world-now", "https://investors.netskope.com/news-releases/news-release-details/netskope-unveils-netskope-one-ai-security-delivering-high"]
-  },
-  {
-    vendor: "Palo Alto Networks",
-    quantumScore: 4,
-    aiScore: 5,
-    quantum: "PQC y decryption para NGFW y Prisma Access: detección, control, logging y políticas frente a TLS 1.3 con algoritmos PQC/híbridos según despliegue.",
-    ai: "Prisma AIRS 3.0 orientado a agentic AI con discovery, evaluación de riesgo, runtime security y gobierno de agentes, apps, modelos y datos.",
-    validate: "Probar PQC/decryption en Prisma Access/NGFW, logs en Strata/XSIAM, discovery de agentes AI, protección runtime y gobierno de acciones agentic.",
-    sources: ["https://docs.paloaltonetworks.com/network-security/decryption/administration/post-quantum-cryptography-decryption", "https://investors.paloaltonetworks.com/news-releases/news-release-details/palo-alto-networks-secures-agentic-ai-prisma-airs-30"]
-  },
-  {
-    vendor: "Fortinet",
-    quantumScore: 5,
-    aiScore: 4,
-    quantum: "Fortinet publica quantum-safe en FortiOS/FortiSASE: PQC, modo híbrido, QKD/PQC, SSL deep inspection reforzada y opciones Sovereign SASE.",
-    ai: "FortiOS 8.0 incorpora controles Secure AI, agentes basados en Fabric y Fortinet Secure AI Data Center para modelos, datos e infraestructura.",
-    validate: "Validar versión FortiOS/FortiSASE, PQC/hybrid mode, impacto de deep inspection, FortiSASE Sovereign y controles de AI aplicables a SASE.",
-    sources: ["https://www.fortinet.com/solutions/quantum-security", "https://www.fortinet.com/corporate/about-us/newsroom/press-releases/2026/fortinet-introduces-fortios-8-expand-secure-networking-with-secure-ai-controls-fabric-based-ai-agents-flexible-sase-and-simplified-sdwan"]
-  },
-  {
-    vendor: "Cisco",
-    quantumScore: 4,
-    aiScore: 5,
-    quantum: "Estrategia PQC de Cisco desde silicon a cloud, con integración de PQC en IPsec, TLS, MACsec y routers seguros; validar alcance concreto en Secure Access/SASE.",
-    ai: "Cisco AI Access y AI Defense añaden control de GenAI, shadow AI, DLP, guardrails, runtime protections y SASE sensible a IA.",
-    validate: "Validar AI Access en Secure Access, detección de tráfico AI, guardrails, AI Defense y hoja de ruta PQC aplicable a SASE/SD-WAN.",
-    sources: ["https://www.cisco.com/c/en/us/about/trust-center/post-quantum-cryptography.html", "https://www.cisco.com/site/us/en/products/security/secure-access/ai-access/index.html"]
-  }
-];
-
-const scenarios = {
-  balanced: {},
-  cloud: { ztna: 5, swg: 5, performance: 5, sdwan: 2, tco: 3 },
-  data: { dlp: 5, casb: 5, ecosystem: 4, risk: 5, sdwan: 2 },
-  branch: { sdwan: 5, apps: 5, performance: 4, tco: 5, ztna: 3 },
-  platform: { ecosystem: 5, soc: 5, apps: 5, threat: 5, ops: 4, implementation: 4, ai: 5, quantum: 4, tco: 3 }
-};
+const { vendors, criteria, useCases, riskItems, cveItems, advancedMetrics, threatHeatmap, techItems, deploymentItems, quantumAiItems, scenarios, evidenceItems, profilePresets } = window.SASE_DATA;
 
 const state = {
   weights: Object.fromEntries(criteria.map(c => [c.id, c.weight])),
-  required: Object.fromEntries(useCases.map(u => [u.label, u.required]))
+  required: Object.fromEntries(useCases.map(u => [u.label, u.required])),
+  profile: {
+    preset: "balanced",
+    sector: "No definido",
+    size: "No definido",
+    soc: "No definido",
+    notes: ""
+  }
 };
 
 function scoreVendors() {
@@ -571,6 +189,66 @@ function renderCriteria() {
   });
 }
 
+function applyProfilePreset(presetId) {
+  const preset = profilePresets[presetId] || profilePresets.balanced;
+  criteria.forEach(criterion => {
+    state.weights[criterion.id] = preset.weights[criterion.id] || criterion.weight;
+  });
+  useCases.forEach(useCase => {
+    state.required[useCase.label] = preset.required.includes(useCase.label);
+  });
+  state.profile.preset = presetId;
+  renderCriteria();
+  renderUseCases();
+  renderProfile();
+  refresh();
+}
+
+function renderProfile() {
+  const preset = profilePresets[state.profile.preset] || profilePresets.balanced;
+  document.getElementById("profileGrid").innerHTML = `
+    <article class="profile-panel">
+      <label for="profilePreset">Tipo de cliente</label>
+      <select id="profilePreset">
+        ${Object.entries(profilePresets).map(([id, item]) => `<option value="${id}" ${id === state.profile.preset ? "selected" : ""}>${item.label}</option>`).join("")}
+      </select>
+      <label for="profileSector">Sector</label>
+      <select id="profileSector">
+        ${["No definido", "Sector público", "Banca/seguros", "Industria", "Retail", "Salud", "Educación", "Tecnología"].map(item => `<option ${item === state.profile.sector ? "selected" : ""}>${item}</option>`).join("")}
+      </select>
+      <label for="profileSize">Tamaño</label>
+      <select id="profileSize">
+        ${["No definido", "< 1.000 usuarios", "1.000-5.000 usuarios", "5.000-25.000 usuarios", "> 25.000 usuarios"].map(item => `<option ${item === state.profile.size ? "selected" : ""}>${item}</option>`).join("")}
+      </select>
+      <label for="profileSoc">SOC / SIEM / XSIAM</label>
+      <select id="profileSoc">
+        ${["No definido", "Sin SOC maduro", "SIEM corporativo", "SOAR/SOC avanzado", "Cortex XSIAM estratégico"].map(item => `<option ${item === state.profile.soc ? "selected" : ""}>${item}</option>`).join("")}
+      </select>
+      <label for="profileNotes">Notas de contexto</label>
+      <textarea id="profileNotes" rows="4" placeholder="Ej: ENS Alto, datos sensibles, GenAI en producción, muchas sedes...">${state.profile.notes}</textarea>
+      <div class="profile-actions">
+        <button class="inline-link" id="applyProfile" type="button">Aplicar perfil</button>
+      </div>
+    </article>
+    <article class="profile-panel">
+      <strong>Impacto del perfil activo</strong>
+      <p>${preset.label}</p>
+      <div class="fit-chips">
+        ${Object.entries(preset.weights).map(([key, value]) => `<span class="fit-chip high">${criteria.find(c => c.id === key)?.label || key}: ${value}</span>`).join("") || `<span class="fit-chip">Pesos base</span>`}
+      </div>
+      <p><strong>Casos imprescindibles sugeridos:</strong> ${preset.required.length ? preset.required.join(", ") : "Ninguno"}</p>
+    </article>
+  `;
+
+  document.getElementById("applyProfile").addEventListener("click", () => {
+    state.profile.sector = document.getElementById("profileSector").value;
+    state.profile.size = document.getElementById("profileSize").value;
+    state.profile.soc = document.getElementById("profileSoc").value;
+    state.profile.notes = document.getElementById("profileNotes").value;
+    applyProfilePreset(document.getElementById("profilePreset").value);
+  });
+}
+
 function renderUseCases() {
   document.getElementById("usecaseList").innerHTML = useCases.map(useCase => `
     <div class="usecase">
@@ -678,6 +356,34 @@ function renderInnovation() {
         <div class="vendor-links">
           ${item.sources.map((source, index) => `<a href="${source}" target="_blank" rel="noreferrer">Fuente ${index + 1}</a>`).join("")}
         </div>
+      </article>
+    `;
+  }).join("");
+}
+
+function renderEvidence() {
+  document.getElementById("evidenceGrid").innerHTML = evidenceItems.map(item => {
+    const vendor = vendors.find(v => v.name === item.vendor);
+    if (!vendor) return "";
+    return `
+      <article class="evidence-item" style="--vendor-accent:${vendor.color}">
+        <div class="vendor-card-head">
+          <img src="${vendor.logo}" alt="Logo ${item.vendor}" loading="lazy">
+          <strong>${item.vendor}</strong>
+        </div>
+        <div class="confidence-meter">
+          <span>Confianza global</span>
+          <strong>${item.confidence.toFixed(1)}/5</strong>
+          <div class="bar-track"><div class="bar-fill" style="width:${(item.confidence / 5) * 100}%;background:${vendor.color}"></div></div>
+        </div>
+        ${item.items.map(evidence => `
+          <div class="evidence-row">
+            <span class="badge">${evidence.type}</span>
+            <p><strong>${evidence.title}</strong></p>
+            <p>Confianza: ${evidence.confidence}/5</p>
+            ${evidence.url ? `<a href="${evidence.url}" target="_blank" rel="noreferrer">Ver fuente</a>` : `<small>Validación pendiente en PoC/RFP</small>`}
+          </div>
+        `).join("")}
       </article>
     `;
   }).join("");
@@ -812,6 +518,8 @@ function createEvaluationPdf() {
 
   doc.section("1. Resumen ejecutivo");
   doc.kv("Recomendacion preliminar", winner.name);
+  doc.kv("Perfil cliente", `${profilePresets[state.profile.preset]?.label || "Balanceado"} | ${state.profile.sector} | ${state.profile.size} | ${state.profile.soc}`);
+  if (state.profile.notes) doc.kv("Notas cliente", state.profile.notes);
   doc.paragraph(winner.bestFor);
   doc.kv("Bloqueos detectados", String(ranked.reduce((sum, item) => sum + item.gates.length, 0)));
   doc.kv("Riesgo medio", (vendors.reduce((sum, v) => sum + v.risk, 0) / vendors.length).toFixed(1));
@@ -900,7 +608,15 @@ function createEvaluationPdf() {
     doc.kv(row.type, vendors.map((vendor, index) => `${vendor.name}: ${row.scores[index]}/5`).join(" | "));
   });
 
-  doc.section("11. Notas de uso");
+  doc.section("11. Evidencia y confianza");
+  evidenceItems.forEach(item => {
+    doc.subsection(`${item.vendor} - confianza ${item.confidence}/5`);
+    item.items.forEach(evidence => {
+      doc.kv(evidence.type, `${evidence.title} | Confianza ${evidence.confidence}/5${evidence.url ? ` | ${evidence.url}` : " | Pendiente PoC/RFP"}`);
+    });
+  });
+
+  doc.section("12. Notas de uso");
   doc.paragraph("La puntuacion agregada no debe sustituir los gates de descarte. Si un caso imprescindible no queda cubierto, el proveedor debe quedar como no apto, apto condicionado o apto solo con arquitectura complementaria.");
   doc.paragraph("La informacion de Gartner, casos publicos y fabricantes debe contrastarse con PoC, contrato, referencias privadas y matriz de versiones/advisories del entorno real.");
 
@@ -1117,12 +833,14 @@ function refresh() {
 
 function init() {
   renderCriteria();
+  renderProfile();
   renderUseCases();
   renderRisks();
   renderTechnical();
   renderDeployment();
   renderInnovation();
   renderFramework();
+  renderEvidence();
   renderVendors();
   wireNavigation();
   refresh();
