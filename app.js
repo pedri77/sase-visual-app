@@ -42,14 +42,14 @@ function scoreVendors() {
       score += weight * criterion.scores[vendorIndex];
       totalWeight += weight;
     });
-    const gates = useCases
+    const unmetRequirements = useCases
       .filter(useCase => state.required[useCase.label] && useCase.fit[vendorIndex] < 4)
       .map(useCase => useCase.label);
 
     return {
       ...vendor,
       score: score / totalWeight,
-      gates
+      unmetRequirements
     };
   });
 
@@ -67,14 +67,14 @@ function renderRanking() {
         <div class="bar-fill" style="width:${(item.score / max) * 100}%;background:${item.color}"></div>
       </div>
       <div class="score">${item.score.toFixed(2)}</div>
-      ${item.gates.length ? `<div class="gate-note">Apto condicionado: ${item.gates.join(", ")}</div>` : ""}
+      ${item.unmetRequirements.length ? `<div class="gate-note">Requiere validación: ${item.unmetRequirements.join(", ")}</div>` : ""}
     </div>
   `).join("");
 
-  const firstWithoutGate = ranked.find(item => item.gates.length === 0) || ranked[0];
-  document.getElementById("winnerName").textContent = firstWithoutGate.name;
-  document.getElementById("winnerReason").textContent = `${firstWithoutGate.bestFor} ${firstWithoutGate.gates.length ? "Tiene gates que deben resolverse en PoC." : "No presenta bloqueos imprescindibles con la selección actual."}`;
-  document.getElementById("gateCount").textContent = ranked.reduce((sum, item) => sum + item.gates.length, 0);
+  const firstEligible = ranked.find(item => item.unmetRequirements.length === 0) || ranked[0];
+  document.getElementById("winnerName").textContent = firstEligible.name;
+  document.getElementById("winnerReason").textContent = `${firstEligible.bestFor} ${firstEligible.unmetRequirements.length ? "Tiene requisitos imprescindibles pendientes de validar en PoC/RFP." : "Cubre los requisitos imprescindibles con la selección actual."}`;
+  document.getElementById("gateCount").textContent = ranked.reduce((sum, item) => sum + item.unmetRequirements.length, 0);
   document.getElementById("riskAverage").textContent = (vendors.reduce((sum, v) => sum + v.risk, 0) / vendors.length).toFixed(1);
 }
 
@@ -97,7 +97,7 @@ function renderQuadrant() {
     ${ranked.map(item => {
       const x = plot(item.fit, 3, 5, 520, 70);
       const y = yPlot(item.strength, 3, 5, 360, 42);
-      const size = item.gates.length ? 12 : 15;
+      const size = item.unmetRequirements.length ? 12 : 15;
       return `
         <circle cx="${x}" cy="${y}" r="${size}" fill="${item.color}" opacity="0.92"/>
         <text x="${x + 18}" y="${y + 5}" fill="#17212f" font-size="13" font-weight="850">${item.name}</text>
@@ -861,7 +861,7 @@ function createEvaluationPdf() {
   const ranked = scoreVendors();
   const selectedScenario = document.getElementById("scenario");
   const scenarioName = selectedScenario.options[selectedScenario.selectedIndex].text;
-  const winner = ranked.find(item => item.gates.length === 0) || ranked[0];
+  const winner = ranked.find(item => item.unmetRequirements.length === 0) || ranked[0];
   const requiredUseCases = Object.entries(state.required)
     .filter(([, required]) => required)
     .map(([label]) => label);
@@ -877,7 +877,7 @@ function createEvaluationPdf() {
   doc.kv("Perfil cliente", `${profilePresets[state.profile.preset]?.label || "Balanceado"} | ${state.profile.sector} | ${state.profile.size} | ${state.profile.soc}`);
   if (state.profile.notes) doc.kv("Notas cliente", state.profile.notes);
   doc.paragraph(winner.bestFor);
-  doc.kv("Bloqueos detectados", String(ranked.reduce((sum, item) => sum + item.gates.length, 0)));
+  doc.kv("Requisitos pendientes", String(ranked.reduce((sum, item) => sum + item.unmetRequirements.length, 0)));
   doc.kv("Riesgo medio", (vendors.reduce((sum, v) => sum + v.risk, 0) / vendors.length).toFixed(1));
   doc.kv("Casos marcados como imprescindibles", requiredUseCases.length ? requiredUseCases.join("; ") : "Ninguno seleccionado");
 
@@ -885,7 +885,7 @@ function createEvaluationPdf() {
   doc.barChart("Ranking visual", ranked.map(item => ({ label: item.name, value: item.score, color: item.color })), 5);
   ranked.forEach((item, index) => {
     doc.kv(`#${index + 1} ${item.name}`, `Score ${item.score.toFixed(2)} / 5`);
-    doc.paragraph(item.gates.length ? `Apto condicionado por: ${item.gates.join(", ")}` : "Sin bloqueos imprescindibles con la seleccion actual.");
+    doc.paragraph(item.unmetRequirements.length ? `Requiere validación por: ${item.unmetRequirements.join(", ")}` : "Cubre los requisitos imprescindibles con la seleccion actual.");
   });
 
   doc.section("3. Lectura ejecutiva por fabricante");
@@ -1028,7 +1028,7 @@ function createEvaluationPdf() {
   });
 
   doc.section("13. Notas de uso");
-  doc.paragraph("La puntuacion agregada no debe sustituir los gates de descarte. Si un caso imprescindible no queda cubierto, el proveedor debe quedar como no apto, apto condicionado o apto solo con arquitectura complementaria.");
+  doc.paragraph("La puntuacion agregada no debe sustituir la validacion de requisitos imprescindibles. Si un caso imprescindible no queda cubierto, el proveedor debe quedar como no apto, apto con condiciones o apto solo con arquitectura complementaria.");
   doc.paragraph("La informacion de Gartner, casos publicos y fabricantes debe contrastarse con PoC, contrato, referencias privadas y matriz de versiones/advisories del entorno real.");
 
   return doc.toBlob();
