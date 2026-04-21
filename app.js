@@ -105,6 +105,8 @@ const criteria = [
   { id: "implementation", label: "Implementación y provisión", weight: 4, scores: [4, 4, 3, 4, 3] },
   { id: "onprem", label: "On-premise / soberanía", weight: 3, scores: [2, 2, 3, 5, 4] },
   { id: "success", label: "Casos de éxito públicos", weight: 3, scores: [5, 5, 4, 5, 5] },
+  { id: "quantum", label: "Quantum / PQC readiness", weight: 3, scores: [5, 3, 4, 5, 4] },
+  { id: "ai", label: "IA y seguridad de IA", weight: 4, scores: [5, 5, 5, 4, 5] },
   { id: "risk", label: "Riesgo de vulnerabilidades", weight: 4, scores: [4, 4, 3, 2, 3] },
   { id: "tco", label: "TCO (Coste Total de Propiedad)", weight: 4, scores: [3, 3, 2, 5, 4] }
 ];
@@ -123,6 +125,8 @@ const useCases = [
   { label: "Integración XSIAM/SIEM/SOAR", fit: [3, 4, 5, 4, 4], required: false },
   { label: "Provisión rápida y rollout por fases", fit: [4, 4, 3, 4, 3], required: false },
   { label: "Opción on-premise / soberana", fit: [2, 2, 3, 5, 4], required: false },
+  { label: "Preparación quantum / PQC", fit: [5, 3, 4, 5, 4], required: false },
+  { label: "Control y seguridad de IA", fit: [5, 5, 5, 4, 5], required: false },
   { label: "Residencia datos UE", fit: [4, 4, 4, 4, 4], required: false },
   { label: "Coexistencia red actual", fit: [3, 4, 5, 5, 5], required: false }
 ];
@@ -253,12 +257,60 @@ const deploymentItems = [
   }
 ];
 
+const quantumAiItems = [
+  {
+    vendor: "Zscaler",
+    quantumScore: 5,
+    aiScore: 5,
+    quantum: "SSE quantum-ready con inspección inline de tráfico PQC, soporte de intercambio híbrido ML-KEM, visibilidad/reporting de cifrados quantum y gobierno de migración.",
+    ai: "Zscaler AI Security Suite para visibilidad, control y gobierno de GenAI/agentic AI; protección de datos y control de uso de IA en la empresa.",
+    validate: "Probar inspección de sesiones TLS/PQC, logs de algoritmos, control de prompts, DLP en GenAI y políticas para shadow AI.",
+    sources: ["https://www.zscaler.com/innovations-launch/quantum-security", "https://ir.zscaler.com/news-releases/news-release-details/zscaler-unveils-new-innovations-secure-enterprise-ai-adoption"]
+  },
+  {
+    vendor: "Netskope",
+    quantumScore: 3,
+    aiScore: 5,
+    quantum: "Roadmap post-cuántico documentado: Netskope indica evaluación de usos de cifrado en Netskope One y foco en ML-KEM 768; quantum-resilient Netskope One aparece como desarrollo/sandbox.",
+    ai: "Netskope One AI Security cubre AI apps, datos, herramientas, agentes, flujos agentic y control de MCP; muy alineado con CASB/DLP data-centric.",
+    validate: "Solicitar disponibilidad real de PQC en tenant, roadmap contractual, AI gateway, control MCP, DLP en prompts y cobertura de modelos privados.",
+    sources: ["https://www.netskope.com/blog/planning-for-a-post-quantum-world-now", "https://investors.netskope.com/news-releases/news-release-details/netskope-unveils-netskope-one-ai-security-delivering-high"]
+  },
+  {
+    vendor: "Palo Alto Networks",
+    quantumScore: 4,
+    aiScore: 5,
+    quantum: "PQC y decryption para NGFW y Prisma Access: detección, control, logging y políticas frente a TLS 1.3 con algoritmos PQC/híbridos según despliegue.",
+    ai: "Prisma AIRS 3.0 orientado a agentic AI con discovery, evaluación de riesgo, runtime security y gobierno de agentes, apps, modelos y datos.",
+    validate: "Probar PQC/decryption en Prisma Access/NGFW, logs en Strata/XSIAM, discovery de agentes AI, protección runtime y gobierno de acciones agentic.",
+    sources: ["https://docs.paloaltonetworks.com/network-security/decryption/administration/post-quantum-cryptography-decryption", "https://investors.paloaltonetworks.com/news-releases/news-release-details/palo-alto-networks-secures-agentic-ai-prisma-airs-30"]
+  },
+  {
+    vendor: "Fortinet",
+    quantumScore: 5,
+    aiScore: 4,
+    quantum: "Fortinet publica quantum-safe en FortiOS/FortiSASE: PQC, modo híbrido, QKD/PQC, SSL deep inspection reforzada y opciones Sovereign SASE.",
+    ai: "FortiOS 8.0 incorpora controles Secure AI, agentes basados en Fabric y Fortinet Secure AI Data Center para modelos, datos e infraestructura.",
+    validate: "Validar versión FortiOS/FortiSASE, PQC/hybrid mode, impacto de deep inspection, FortiSASE Sovereign y controles de AI aplicables a SASE.",
+    sources: ["https://www.fortinet.com/solutions/quantum-security", "https://www.fortinet.com/corporate/about-us/newsroom/press-releases/2026/fortinet-introduces-fortios-8-expand-secure-networking-with-secure-ai-controls-fabric-based-ai-agents-flexible-sase-and-simplified-sdwan"]
+  },
+  {
+    vendor: "Cisco",
+    quantumScore: 4,
+    aiScore: 5,
+    quantum: "Estrategia PQC de Cisco desde silicon a cloud, con integración de PQC en IPsec, TLS, MACsec y routers seguros; validar alcance concreto en Secure Access/SASE.",
+    ai: "Cisco AI Access y AI Defense añaden control de GenAI, shadow AI, DLP, guardrails, runtime protections y SASE sensible a IA.",
+    validate: "Validar AI Access en Secure Access, detección de tráfico AI, guardrails, AI Defense y hoja de ruta PQC aplicable a SASE/SD-WAN.",
+    sources: ["https://www.cisco.com/c/en/us/about/trust-center/post-quantum-cryptography.html", "https://www.cisco.com/site/us/en/products/security/secure-access/ai-access/index.html"]
+  }
+];
+
 const scenarios = {
   balanced: {},
   cloud: { ztna: 5, swg: 5, performance: 5, sdwan: 2, tco: 3 },
   data: { dlp: 5, casb: 5, ecosystem: 4, risk: 5, sdwan: 2 },
   branch: { sdwan: 5, apps: 5, performance: 4, tco: 5, ztna: 3 },
-  platform: { ecosystem: 5, soc: 5, apps: 5, threat: 5, ops: 4, implementation: 4, tco: 3 }
+  platform: { ecosystem: 5, soc: 5, apps: 5, threat: 5, ops: 4, implementation: 4, ai: 5, quantum: 4, tco: 3 }
 };
 
 const state = {
@@ -474,6 +526,32 @@ function renderDeployment() {
   }).join("");
 }
 
+function renderInnovation() {
+  document.getElementById("innovationGrid").innerHTML = quantumAiItems.map(item => {
+    const vendor = vendors.find(v => v.name === item.vendor);
+    return `
+      <article class="innovation-item" style="--vendor-accent:${vendor.color}">
+        <div class="vendor-card-head">
+          <img src="${vendor.logo}" alt="Logo ${item.vendor}" loading="lazy">
+          <strong>${item.vendor}</strong>
+        </div>
+        <div class="score-pair">
+          <div class="badge"><span>Quantum/PQC</span><strong>${item.quantumScore}/5</strong></div>
+          <div class="badge"><span>IA</span><strong>${item.aiScore}/5</strong></div>
+        </div>
+        <div class="innovation-meta">
+          <div><span>Quantum / PQC</span><p>${item.quantum}</p></div>
+          <div><span>IA / Seguridad de IA</span><p>${item.ai}</p></div>
+          <div><span>Validar en PoC</span><p>${item.validate}</p></div>
+        </div>
+        <div class="vendor-links">
+          ${item.sources.map((source, index) => `<a href="${source}" target="_blank" rel="noreferrer">Fuente ${index + 1}</a>`).join("")}
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
 function applyScenario(name) {
   const selected = scenarios[name] || {};
   criteria.forEach(criterion => {
@@ -594,7 +672,16 @@ function createEvaluationPdf() {
     doc.kv("Casos publicos", item.success.map(story => `${story.label}: ${story.url}`).join(" | "));
   });
 
-  doc.section("9. Notas de uso");
+  doc.section("9. Valoracion quantum e IA");
+  quantumAiItems.forEach(item => {
+    doc.subsection(item.vendor);
+    doc.kv("Quantum / PQC", `${item.quantumScore}/5 - ${item.quantum}`);
+    doc.kv("IA / Seguridad de IA", `${item.aiScore}/5 - ${item.ai}`);
+    doc.kv("Validar en PoC", item.validate);
+    doc.kv("Fuentes", item.sources.join(" | "));
+  });
+
+  doc.section("10. Notas de uso");
   doc.paragraph("La puntuacion agregada no debe sustituir los gates de descarte. Si un caso imprescindible no queda cubierto, el proveedor debe quedar como no apto, apto condicionado o apto solo con arquitectura complementaria.");
   doc.paragraph("La informacion de Gartner, casos publicos y fabricantes debe contrastarse con PoC, contrato, referencias privadas y matriz de versiones/advisories del entorno real.");
 
@@ -797,6 +884,7 @@ function init() {
   renderRisks();
   renderTechnical();
   renderDeployment();
+  renderInnovation();
   renderVendors();
   wireNavigation();
   refresh();

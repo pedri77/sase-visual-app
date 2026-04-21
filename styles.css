@@ -446,7 +446,8 @@ select {
 
 .vendor-tile::before,
 .tech-item::before,
-.deployment-item::before {
+.deployment-item::before,
+.innovation-item::before {
   content: "";
   position: absolute;
   inset: 0 auto 0 0;
@@ -540,7 +541,8 @@ select {
 .usecase-list,
 .risk-grid,
 .tech-grid,
-.deployment-grid {
+.deployment-grid,
+.innovation-grid {
   display: grid;
   gap: 12px;
 }
@@ -549,7 +551,8 @@ select {
 .usecase,
 .risk-item,
 .tech-item,
-.deployment-item {
+.deployment-item,
+.innovation-item {
   position: relative;
   display: grid;
   gap: 12px;
@@ -638,13 +641,15 @@ input[type="range"] {
 
 .risk-grid,
 .tech-grid,
-.deployment-grid {
+.deployment-grid,
+.innovation-grid {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
 .risk-item,
 .tech-item,
-.deployment-item {
+.deployment-item,
+.innovation-item {
   align-content: start;
 }
 
@@ -688,7 +693,8 @@ input[type="range"] {
 }
 
 .tech-item,
-.deployment-item {
+.deployment-item,
+.innovation-item {
   padding-left: 18px;
 }
 
@@ -704,7 +710,8 @@ input[type="range"] {
   color: var(--ink);
 }
 
-.deployment-item p {
+.deployment-item p,
+.innovation-item p {
   margin: 0;
   color: var(--muted);
 }
@@ -724,23 +731,44 @@ input[type="range"] {
   text-decoration: underline;
 }
 
-.deployment-meta {
+.deployment-meta,
+.innovation-meta {
   display: grid;
   gap: 8px;
 }
 
-.deployment-meta div {
+.deployment-meta div,
+.innovation-meta div {
   padding: 10px;
   border-radius: 7px;
   background: #eef2f7;
 }
 
-.deployment-meta span {
+.deployment-meta span,
+.innovation-meta span {
   display: block;
   color: var(--muted);
   font-size: 12px;
   font-weight: 900;
   text-transform: uppercase;
+}
+
+.score-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.score-pair .badge {
+  display: block;
+  min-height: 0;
+  padding: 10px;
+}
+
+.score-pair strong {
+  display: block;
+  color: var(--ink);
+  font-size: 22px;
 }
 
 @media (max-width: 980px) {
@@ -755,7 +783,7 @@ input[type="range"] {
 
   .rail {
     position: static;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(7, minmax(0, 1fr));
   }
 
   .rail-item {
