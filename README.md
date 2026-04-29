@@ -131,6 +131,16 @@ Consulta [`ARCHITECTURE_ROADMAP.md`](ARCHITECTURE_ROADMAP.md) para el plan de ev
 
 ---
 
+## `> cat legal.md`
+
+This project compares commercial SASE/SSE vendors using publicly available data. All vendor names and trademarks belong to their respective owners. This project is **not affiliated with or endorsed by** any vendor listed.
+
+The information provided is for **educational purposes only** and does not constitute professional advice. Scores, CVE data, and vendor capabilities may be incomplete or outdated. See the full [**DISCLAIMER.md**](DISCLAIMER.md) for details.
+
+Licensed under the [MIT License](LICENSE).
+
+---
+
 <p align="center">
   <a href="https://pedri77.github.io/sase-visual-app/"><img src="https://img.shields.io/badge/🌐_Open_SASE_Decision_Studio-06b6d4?style=for-the-badge&labelColor=0f172a" alt="Open App"/></a>
   &nbsp;&nbsp;
